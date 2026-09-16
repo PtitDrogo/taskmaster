@@ -50,7 +50,20 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             stderr_logfile = value;
         } else if (setting == "umask") {
             umask = std::stoi(value, nullptr, 8);
-        } else {
+        } else if (setting == "autorestart") {
+            if (value == "always")
+                autorestart = AutoRestart::Always;
+            else if (value == "never")
+                autorestart = AutoRestart::Never;
+            else if (value == "unexpected")
+                autorestart = AutoRestart::Unexpected;
+        } else if (setting == "exitcodes") {
+            exitcodes.push_back(std::stoi(value));
+        } else if (setting == "startsecs") {
+            startsecs = std::stoi(value);
+        }
+
+        else {
             std::cerr << "Unknown setting: " << setting << " in [" << name << "]\n";
             return 0;
         }

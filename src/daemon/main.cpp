@@ -9,12 +9,10 @@
 
 struct Configs {
     ServerConfig server;
-    // ClientConfig client;
     std::map<std::string, ProgramConfig> programs;
 
     void printSettings() const {
         server.printSettings();
-        // client.printSettings();
         for (auto &[section, cfg] : programs) {
             std::cout << "Section: " << section << "\n";
             cfg.printSettings();
@@ -46,36 +44,17 @@ static int handler(void *user, const char *section, const char *name, const char
     } else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
         err = cfg->server.parseSetting(setting, val);
     } else if (sect.rfind("rpcinterface:", 0) == 0) {
-        //Idk what that is I dont think we need to handle that
-    } else {
-        std::cerr << "Unknown section: " << sect << "\n";
-        return 0;
+        // Idk what that is I dont think we need to handle that
     }
-    if (!err) {
-        return 0;
-    }
-    return 1;
+    return err;
 }
-
-//in client Do this but for client !
-/*
-else if (sect == "supervisorctl") {
-        err = cfg->client.parseSetting(setting, val);
-    }
-*/
-
-// typedef int (*ini_handler)(void* user, const char* section, const char* name, const char* value);
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         std::cerr << "Error: argument expected" << std::endl;
     }
-    // I must read the config file first, then the server will start the processes and keep track of them.
-    // I should only need like a PID and a socket number i guess ?
-    //  Its a process, I gotta remember how to talk to one, theres a pipe right ?
-    
     Configs configs;
-    
+
     int result = ini_parse(argv[1], handler, &configs);
     if (result < 0) {
         std::cerr << "Could not open config file\n";
@@ -86,5 +65,6 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "I am the Daemon/Server !" << std::endl;
+    configs.printSettings();
     return 0;
 }

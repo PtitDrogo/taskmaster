@@ -10,6 +10,7 @@ struct ProgramConfig {
     std::string cmd;
     int numprocs = 1; // How many process it should make
     bool autostart = true;
+    int startsecs = 1;
     enum class AutoRestart { Always, Never, Unexpected } autorestart = AutoRestart::Unexpected;
     std::vector<int> exitcodes = {0};
     int starttime = 1;
