@@ -1,3 +1,5 @@
+#pragma once
+
 #include <csignal>
 #include <iostream>
 #include <map>

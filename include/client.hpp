@@ -1,15 +1,11 @@
-#include <iostream>
+#pragma once
 
-class ClientConfig {
-  private:
-    std::string serverurl;
-    std::string username;
-    std::string password;
-    std::string prompt = "supervisor"; // idk what that is actually.
+#include <readline/history.h>
+#include <readline/readline.h>
+#include <sstream>
+#include <string>
 
-  public:
-    ClientConfig(/* args */);
-    ~ClientConfig();
-    void printSettings() const;
-    int parseSetting(const std::string &setting, const std::string &value);
-};
+#include "ClientConfig.hpp"
+#include "ini.h"
+
+#define HELP_STRING "Help - Status - Start - Stop\n Restart - Update - Shutdown"

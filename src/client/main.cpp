@@ -1,6 +1,5 @@
 #include "client.hpp"
-#include "ini.h"
-#include "taskmaster.hpp"
+
 
 static int handler(void *user, const char *section, const char *name, const char *value) {
     auto *cfg = static_cast<ClientConfig *>(user);
@@ -30,5 +29,26 @@ int main(int argc, char *argv[]) {
 
     config.printSettings();
 
+    char* line;
+    while ((line = readline("supervisor> ")) != nullptr) {
+        std::string input(line);
+        if (!input.empty()) {
+            add_history(line);
+        }
+        free(line);
+
+        std::istringstream iss(input);
+        std::string cmd;
+        iss >> cmd;
+
+        if (cmd == "help") {
+            std::cout << "HELP - SHUTDOWN - OTHER STUFF" << std::endl;
+        }
+        else if (cmd.empty()) continue;
+        else std::cout << "Unknown command: " << cmd << "\n";
+    }
+
+
+    clear_history(); //This is the clear history for the shell.
     return 0;
 }

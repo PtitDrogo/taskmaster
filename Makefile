@@ -33,7 +33,7 @@ RM		=	rm -f
 
 CC_C		=	cc
 
-CFLAGS		=	-Wall -Werror -Wextra -g3
+CFLAGS		=	-Wall -Werror -Wextra -g3 -lreadline
 
 INCLUDES	=	-I $(HEADER_DIR) -MMD -MP
 

@@ -1,8 +1,11 @@
-#include "client.hpp"
+
+#include "ClientConfig.hpp"
 
 ClientConfig::ClientConfig(/* args */) {}
 
-ClientConfig::~ClientConfig() {}
+ClientConfig::~ClientConfig() {
+    std::cout << "Im running the destructor for clear history" << std::endl;
+}
 
 void ClientConfig::printSettings() const {
     std::cout << "[supervisorctl]\n"
