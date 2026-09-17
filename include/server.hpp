@@ -22,3 +22,6 @@ class ServerConfig {
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
 };
+
+
+int dropPrivileges(const std::string &user);

@@ -94,12 +94,17 @@ int main(int argc, char *argv[]) {
 
     std::cout << "Server listening on " << SOCK_PATH << std::endl;
 
-
     bool flag = true;
 
     // pollfd list: index 0 is always the listening socket, rest are clients
     std::vector<pollfd> fds;
     fds.push_back({server_fd, POLLIN, 0});
+
+    if (dropPrivileges("tfreydie") == -1 && dropPrivileges("bpoyet") == -1) {
+        std::cerr << "Error trying to default to tfreydie or bpoyet user privileges\n";
+        return 1;
+        // Dont hardcode this before sending it :)
+    }
 
     while (true) {
         int ready = poll(fds.data(), fds.size(), 1000);
@@ -111,7 +116,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (ready == 0) {
-            //Check on processes, nothing happened
+            // Check on processes, nothing happened
             continue;
         }
 
@@ -123,7 +128,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        //backward so we can just safely remove
+        // backward so we can just safely remove
         for (size_t i = fds.size(); i-- > 1;) {
             if (!(fds[i].revents & (POLLIN | POLLHUP | POLLERR)))
                 continue;
@@ -162,8 +167,6 @@ int main(int argc, char *argv[]) {
     for (auto &pfd : fds)
         close(pfd.fd);
     unlink(SOCK_PATH);
-
-    
 
     return 0;
 }

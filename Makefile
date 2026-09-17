@@ -14,7 +14,8 @@ SRCS_COMMON	=	$(SRCS_DIR)/common/ini.cpp \
  				$(SRCS_DIR)/common/ProgramConfig.cpp 
 
 SRCS_DAEMON	=	$(SRCS_DIR)/daemon/main.cpp \
-				$(SRCS_DIR)/daemon/Server.cpp
+				$(SRCS_DIR)/daemon/Server.cpp \
+				$(SRCS_DIR)/daemon/dropPrivileges.cpp
 
 SRCS_CLIENT	=	$(SRCS_DIR)/client/main.cpp \
 				$(SRCS_DIR)/client/Client.cpp 
