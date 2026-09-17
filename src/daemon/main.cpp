@@ -1,5 +1,14 @@
 #include "server.hpp"
 
+#include <cstring>
+#include <poll.h>
+#include <string>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include <vector>
+
+#define SOCK_PATH "/tmp/supervisor.sock"
 
 struct Configs {
     ServerConfig server;
@@ -60,5 +69,101 @@ int main(int argc, char *argv[]) {
 
     std::cout << "I am the Daemon/Server !" << std::endl;
     configs.printSettings();
+
+    int server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (server_fd < 0) {
+        perror("socket");
+        return 1;
+    }
+
+    unlink(SOCK_PATH); // remove old socket file if it exists
+
+    sockaddr_un addr{};
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, SOCK_PATH, sizeof(addr.sun_path) - 1);
+
+    if (bind(server_fd, (sockaddr *)&addr, sizeof(addr)) < 0) {
+        perror("bind");
+        return 1;
+    }
+
+    if (listen(server_fd, 10) < 0) {
+        perror("listen");
+        return 1;
+    }
+
+    std::cout << "Server listening on " << SOCK_PATH << std::endl;
+
+
+    bool flag = true;
+
+    // pollfd list: index 0 is always the listening socket, rest are clients
+    std::vector<pollfd> fds;
+    fds.push_back({server_fd, POLLIN, 0});
+
+    while (true) {
+        int ready = poll(fds.data(), fds.size(), 1000);
+        if (ready < 0) {
+            if (errno == EINTR)
+                continue; // interrupted by a signal, just retry
+            perror("poll");
+            break;
+        }
+
+        if (ready == 0) {
+            //Check on processes, nothing happened
+            continue;
+        }
+
+        if (fds[0].revents & POLLIN) {
+            int client_fd = accept(server_fd, nullptr, nullptr);
+            if (client_fd >= 0) {
+                fds.push_back({client_fd, POLLIN, 0});
+                std::cout << "Client connected (fd=" << client_fd << ")\n";
+            }
+        }
+
+        //backward so we can just safely remove
+        for (size_t i = fds.size(); i-- > 1;) {
+            if (!(fds[i].revents & (POLLIN | POLLHUP | POLLERR)))
+                continue;
+
+            int client_fd = fds[i].fd;
+            char buf[256];
+            ssize_t n = read(client_fd, buf, sizeof(buf) - 1);
+
+            if (n <= 0) {
+                std::cout << "Client disconnected (fd=" << client_fd << ")\n";
+                close(client_fd);
+                fds.erase(fds.begin() + i);
+                continue;
+            }
+
+            buf[n] = '\0';
+            std::string cmd(buf);
+            std::string response;
+            std::cout << "Command is " << cmd << std::endl;
+            if (cmd == "SET true") {
+                flag = true;
+                response = "OK flag set to true\n";
+            } else if (cmd == "SET false") {
+                flag = false;
+                response = "OK flag set to false\n";
+            } else if (cmd == "GET") {
+                response = std::string("STATUS ") + (flag ? "true" : "false") + "\n";
+            } else {
+                response = "ERROR unknown command\n";
+            }
+
+            write(client_fd, response.c_str(), response.size());
+        }
+    }
+
+    for (auto &pfd : fds)
+        close(pfd.fd);
+    unlink(SOCK_PATH);
+
+    
+
     return 0;
 }

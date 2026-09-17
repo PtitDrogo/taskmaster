@@ -1,5 +1,9 @@
 #include "client.hpp"
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
 
+#define SOCK_PATH "/tmp/supervisor.sock"
 
 static int handler(void *user, const char *section, const char *name, const char *value) {
     auto *cfg = static_cast<ClientConfig *>(user);
@@ -29,7 +33,22 @@ int main(int argc, char *argv[]) {
 
     config.printSettings();
 
-    char* line;
+    int fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (fd < 0) {
+        perror("socket");
+        return 1;
+    }
+
+    sockaddr_un addr{};
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, SOCK_PATH, sizeof(addr.sun_path) - 1);
+
+    if (connect(fd, (sockaddr *)&addr, sizeof(addr)) < 0) {
+        perror("connect");
+        return 1;
+    }
+
+    char *line;
     while ((line = readline("supervisor> ")) != nullptr) {
         std::string input(line);
         if (!input.empty()) {
@@ -37,18 +56,25 @@ int main(int argc, char *argv[]) {
         }
         free(line);
 
-        std::istringstream iss(input);
-        std::string cmd;
-        iss >> cmd;
-
-        if (cmd == "help") {
+        if (input == "help") {
             std::cout << "HELP - SHUTDOWN - OTHER STUFF" << std::endl;
+        } else if (input.empty()) {
+            continue;
+        } else {
+            write(fd, input.c_str(), input.size());
+            std::cout << "Sending" << input.c_str() << std::endl;
+
+            char buf[256];
+            ssize_t n = read(fd, buf, sizeof(buf) - 1);
+            if (n > 0) {
+                buf[n] = '\0';
+                std::cout << buf;
+            }
+
         }
-        else if (cmd.empty()) continue;
-        else std::cout << "Unknown command: " << cmd << "\n";
     }
 
-
-    clear_history(); //This is the clear history for the shell.
+    clear_history(); // This is the clear history for the shell.
+    close(fd);
     return 0;
 }
