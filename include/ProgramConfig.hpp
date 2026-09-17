@@ -1,9 +1,18 @@
 #pragma once
 
 #include <csignal>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <map>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <vector>
+
+struct program {
+    pid_t pid;
+    std::string status; // Probably en enum later on.
+};
 
 // This hold the config of every created program.
 struct ProgramConfig {
@@ -26,8 +35,11 @@ struct ProgramConfig {
     mode_t umask = 022; // Octal value, this is about setting the files perimission this program will create.
 
   public:
+    std::vector<program> programs;
     ProgramConfig(/* args */);
     ~ProgramConfig();
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
+    int createProgram(const char *cmd);
+    int startAllPrograms(const std::map<std::string, ProgramConfig> &programs);
 };

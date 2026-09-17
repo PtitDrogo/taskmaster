@@ -1,5 +1,6 @@
+#include "ServerConfig.hpp"
 #include "server.hpp"
-
+#include <csignal>
 #include <cstring>
 #include <poll.h>
 #include <string>
@@ -7,6 +8,12 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <vector>
+
+volatile sig_atomic_t child_exited = 0;
+
+void sigchld_handler(int) {
+    child_exited = 1; // just set a flag, do real work outside the handler
+}
 
 #define SOCK_PATH "/tmp/supervisor.sock"
 
@@ -76,6 +83,13 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // signal to know whats going on with children
+    struct sigaction sa{};
+    sa.sa_handler = sigchld_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART; // Restart whatever syscall the signal interrupted (Not guaranted)
+    sigaction(SIGCHLD, &sa, nullptr);
+
     unlink(SOCK_PATH); // remove old socket file if it exists
 
     sockaddr_un addr{};
@@ -106,6 +120,11 @@ int main(int argc, char *argv[]) {
         // Dont hardcode this before sending it :)
     }
 
+    // Launch programs (this is fucked and will have to be changed to another class/function or smth);
+    if (!configs.programs.empty()) {
+        configs.programs.begin()->second.startAllPrograms(configs.programs);
+    }
+
     while (true) {
         int ready = poll(fds.data(), fds.size(), 1000);
         if (ready < 0) {
@@ -116,7 +135,15 @@ int main(int argc, char *argv[]) {
         }
 
         if (ready == 0) {
-            // Check on processes, nothing happened
+            if (child_exited) {
+                child_exited = 0;
+                int status;
+                pid_t pid;
+                while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+                    std::cout << "Program with PID" << pid << "Just ended" << std::endl;
+                    // find which Program this pid belongs to, update its state
+                }
+            }
             continue;
         }
 
@@ -156,6 +183,30 @@ int main(int argc, char *argv[]) {
                 response = "OK flag set to false\n";
             } else if (cmd == "GET") {
                 response = std::string("STATUS ") + (flag ? "true" : "false") + "\n";
+            } else if (cmd == "STATUS") {
+                std::cout << "Properly received the Status request !\n" << std::endl;
+                for (auto config : configs.programs) {
+                    for (auto program : config.second.programs) {
+                        if (kill(program.pid, 0) == 0) {
+                            response = std::string("Program with PID ") + std::to_string(program.pid) +
+                                       std::string("is good and well !\n");
+                            write(client_fd, response.c_str(), response.size());
+                            // process exists (you have permission to signal it)
+                        } else if (errno == ESRCH) {
+                            response = std::string("Program with PID ") + std::to_string(program.pid) +
+                                       std::string("dead and buried !\n");
+                            write(client_fd, response.c_str(), response.size());
+                            // no such process — already dead and reaped, or never existed
+                        } else {
+                            response = std::string("Program with PID ") + std::to_string(program.pid) +
+                                       std::string("is in a state idk what it means !\n");
+                            write(client_fd, response.c_str(), response.size());
+                            // idk
+                        }
+                    }
+                }
+                continue;
+
             } else {
                 response = "ERROR unknown command\n";
             }

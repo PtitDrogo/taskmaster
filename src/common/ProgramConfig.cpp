@@ -74,3 +74,42 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
 
     return 1;
 }
+
+int ProgramConfig::startAllPrograms(const std::map<std::string, ProgramConfig> &programs) {
+    int err = 1;
+    for (auto program : programs) {
+        err = createProgram(program.second.cmd.c_str());
+    }
+    return err;
+}
+
+// we gotta just call /bin/sh on everything
+int ProgramConfig::createProgram(const char *cmd) {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("fork failed");
+        return 1;
+    } else if (pid == 0) {
+        // Execve takes in char* and not const char*, so we have to do this.
+        char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)cmd, nullptr};
+        char *envp[] = {nullptr}; // Pass env later.
+
+        execve("/bin/sh", argv, envp);
+
+        // Only reached if execve fails
+        perror("execve failed");
+        _exit(127); // use _exit, not exit, in a failed post-fork child
+    } else {
+        // Adding the pid of this particular instance to the list to be waited on later.
+        programs.push_back({pid, "Test starting state"});
+
+        // This waiting thing happens later or smth idk.
+        //  int status;
+        //  waitpid(pid, &status, 0);
+        //  if (WIFEXITED(status)) {
+        //      std::cout << "Child exited with " << WEXITSTATUS(status) << "\n";
+        //  }
+    }
+    return 1;
+}
