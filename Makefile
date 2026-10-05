@@ -18,7 +18,7 @@ SRCS_DAEMON	=	$(SRCS_DIR)/daemon/main.cpp \
 				$(SRCS_DIR)/daemon/dropPrivileges.cpp \
 
 SRCS_CLIENT	=	$(SRCS_DIR)/client/main.cpp \
-				$(SRCS_DIR)/client/Client.cpp 
+				$(SRCS_DIR)/client/ClientConfig.cpp 
 
 OBJS_COMMON	=	$(patsubst $(SRCS_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(SRCS_COMMON))
 OBJS_DAEMON	=	$(patsubst $(SRCS_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(SRCS_DAEMON)) $(OBJS_COMMON)

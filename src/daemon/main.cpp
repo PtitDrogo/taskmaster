@@ -15,8 +15,6 @@ void sigchld_handler(int) {
     child_exited = 1; // just set a flag, do real work outside the handler
 }
 
-#define SOCK_PATH "/tmp/supervisor.sock"
-
 struct Configs {
     ServerConfig server;
     std::map<std::string, ProgramConfig> programs;
@@ -77,11 +75,9 @@ int main(int argc, char *argv[]) {
     std::cout << "I am the Daemon/Server !" << std::endl;
     configs.printSettings();
 
-    int server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (server_fd < 0) {
-        perror("socket");
-        return 1;
-    }
+    int server_fd = ServerConfig::startDaemonServer();
+    if (server_fd == -1)
+        return EXIT_FAILURE;
 
     // signal to know whats going on with children
     struct sigaction sa{};
@@ -89,22 +85,6 @@ int main(int argc, char *argv[]) {
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART; // Restart whatever syscall the signal interrupted (Not guaranted)
     sigaction(SIGCHLD, &sa, nullptr);
-
-    unlink(SOCK_PATH); // remove old socket file if it exists
-
-    sockaddr_un addr{};
-    addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, SOCK_PATH, sizeof(addr.sun_path) - 1);
-
-    if (bind(server_fd, (sockaddr *)&addr, sizeof(addr)) < 0) {
-        perror("bind");
-        return 1;
-    }
-
-    if (listen(server_fd, 10) < 0) {
-        perror("listen");
-        return 1;
-    }
 
     std::cout << "Server listening on " << SOCK_PATH << std::endl;
 
