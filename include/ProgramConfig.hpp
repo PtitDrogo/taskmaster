@@ -26,7 +26,7 @@ struct ProgramConfig {
     std::vector<int> exitcodes = {0};
     int starttime = 1;
     int startretries = 3;
-    int stopsignal = SIGTERM;
+    int stopsignal = SIGINT;
     int stoptime = 10;
     bool discard_stdout = false, discard_stderr = false;
     std::string stdout_logfile, stderr_logfile;
@@ -42,4 +42,6 @@ struct ProgramConfig {
     int parseSetting(const std::string &setting, const std::string &value);
     int createProgram(const char *cmd);
     int startAllPrograms(const std::map<std::string, ProgramConfig> &programs);
+    int parseSignals(std::string signal);
+    void addEnvironnement(const std::string value);
 };

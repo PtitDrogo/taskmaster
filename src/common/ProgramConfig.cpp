@@ -1,4 +1,5 @@
 #include "ProgramConfig.hpp"
+#include <unordered_map>
 
 ProgramConfig::ProgramConfig(/* args */) {}
 
@@ -21,6 +22,31 @@ void ProgramConfig::printSettings() const {
         std::cout << "  env:\n";
         for (auto &[k, v] : env)
             std::cout << k << "=" << v << "\n";
+    }
+}
+
+int ProgramConfig::parseSignals(std::string signal){
+    const std::unordered_map<std::string, int> signals = {
+        {"HUP", SIGHUP},   {"INT", SIGINT},   {"QUIT", SIGQUIT},
+        {"KILL", SIGKILL}, {"TERM", SIGTERM}, {"USR1", SIGUSR1},
+        {"USR2", SIGUSR2}
+    };
+
+    auto it = signals.find(signal);
+    if (it == signals.end())
+        return -1;
+    return it->second;
+}
+
+void ProgramConfig::addEnvironnement(const std::string value){
+    std::string name = "";
+    std::string val = "";
+    
+    while(true){
+        size_t pos = value.find("=");
+        if(pos == std::string::npos)
+            break;
+        name = value.substr()
     }
 }
 
@@ -61,6 +87,14 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             exitcodes.push_back(std::stoi(value));
         } else if (setting == "startsecs") {
             startsecs = std::stoi(value);
+        }else if (setting == "stopsignal"){
+            int signal = parseSignals(value);
+            if(signal != -1){
+                stopsignal = signal;
+            }
+        }else if (setting == "environment"){
+            std::cout << "environment " << value;
+            
         }
 
         else {
