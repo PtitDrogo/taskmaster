@@ -38,8 +38,10 @@ struct ProgramConfig {
     std::vector<program> programs;
     ProgramConfig(/* args */);
     ~ProgramConfig();
+
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
-    int createProgram(const char *cmd);
-    int startAllPrograms(const std::map<std::string, ProgramConfig> &programs);
+    pid_t startProgram();
+    bool shouldAutostart() const { return autostart; }
+    int startAllPrograms();
 };

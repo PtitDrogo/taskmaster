@@ -75,32 +75,34 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
     return 1;
 }
 
-int ProgramConfig::startAllPrograms(const std::map<std::string, ProgramConfig> &programs) {
-    int err = 1;
-    for (auto program : programs) {
-        err = createProgram(program.second.cmd.c_str());
-    }
-    return err;
+int ProgramConfig::startAllPrograms() {
+    for (int i = 0; i < numprocs; ++i)
+        if (startProgram() == -1)
+            return -1;
+    return 1;
 }
 
 // we gotta just call /bin/sh on everything
-int ProgramConfig::createProgram(const char *cmd) {
+pid_t ProgramConfig::startProgram() {
     pid_t pid = fork();
 
     if (pid < 0) {
         perror("fork failed");
-        return 1;
+        return -1;
     } else if (pid == 0) {
+        setpgid(0, 0); // L'enfant se fou dans son groupe 0
         // Execve takes in char* and not const char*, so we have to do this.
-        char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)cmd, nullptr};
+        char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)cmd.c_str(), nullptr};
         char *envp[] = {nullptr}; // Pass env later.
-
         execve("/bin/sh", argv, envp);
 
         // Only reached if execve fails
         perror("execve failed");
         _exit(127); // use _exit, not exit, in a failed post-fork child
     } else {
+        setpgid(pid, pid); // Le parent fou l'enfant dans le groupe de son PID
+        // On fait les deux pour une histoire de race condition.
+
         // Adding the pid of this particular instance to the list to be waited on later.
         programs.push_back({pid, "Test starting state"});
 
@@ -111,5 +113,5 @@ int ProgramConfig::createProgram(const char *cmd) {
         //      std::cout << "Child exited with " << WEXITSTATUS(status) << "\n";
         //  }
     }
-    return 1;
+    return pid;
 }

@@ -5,9 +5,12 @@
 #include <map>
 #include <unordered_map>
 
-#include "ServerConfig.hpp"
 #include "ProgramConfig.hpp"
+#include "ServerConfig.hpp"
 #include "ini.h"
+
+#define SHUTDOWN -2
+#define CLIENT_DISCONNECT -3
 
 struct Configs {
     ServerConfig server;
@@ -23,5 +26,4 @@ struct Configs {
 };
 
 int dropPrivileges(const std::string &user);
-void handleCommands(int client_fd, std::string cmd, const Configs &configs);
-void handleStatusCmd(int client_fd, const Configs &configs);
+int handleCommands(int client_fd, std::string fullCmd, const Configs &configs);

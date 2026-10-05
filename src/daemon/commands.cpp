@@ -1,21 +1,28 @@
 #include "server.hpp"
+#include <sstream>
 
-void handleCommands(int client_fd, std::string cmd, const Configs &configs) {
-    std::cout << "Command is " << cmd << std::endl;
+int handleShutdown(int client_fd) {
+    std::string response = "Really shut the remote supervisord process down y/N?";
+    write(client_fd, response.c_str(), response.size());
 
-    if (cmd == "STATUS") {
-        std::cout << "Properly received the Status request !\n" << std::endl;
-        handleStatusCmd(client_fd, configs);
+    char buf[256] = {0};
+    ssize_t n = read(client_fd, buf, sizeof(buf) - 1);
+
+    if (n <= 0) {
+        return CLIENT_DISCONNECT;
+    }
+    std::string promptRes(buf);
+    if (promptRes == "y") {
+        return SHUTDOWN;
     } else {
-        std::string response = "ERROR unknown command\n";
-        write(client_fd, response.c_str(), response.size());
+        return 1;
     }
 }
 
 void handleStatusCmd(int client_fd, const Configs &configs) {
     std::cout << "Properly received the Status request !\n" << std::endl;
-    for (auto config : configs.programs) {
-        for (auto program : config.second.programs) {
+    for (const auto &config : configs.programs) {
+        for (const auto &program : config.second.programs) {
             if (kill(program.pid, 0) == 0) {
                 std::string response = std::string("Program with PID ") + std::to_string(program.pid) +
                                        std::string("is good and well !\n");
@@ -34,4 +41,33 @@ void handleStatusCmd(int client_fd, const Configs &configs) {
             }
         }
     }
+}
+
+int handleCommands(int client_fd, std::string fullCmd, const Configs &configs) {
+    std::cout << "Full Command is " << fullCmd << std::endl;
+
+    std::istringstream iss(fullCmd);
+    std::string cmd;
+    std::string arg;
+    iss >> cmd;
+    iss >> arg;
+
+    if (cmd == "STATUS") {
+        std::cout << "Properly received the Status request !\n" << std::endl;
+        handleStatusCmd(client_fd, configs);
+    } else if (cmd == "shutdown") {
+        return handleShutdown(client_fd);
+    } else if (cmd == "start") {
+
+    } else if (cmd == "stop") {
+
+    } else if (cmd == "restart") {
+
+    }
+
+    else {
+        std::string response = "ERROR unknown command\n";
+        write(client_fd, response.c_str(), response.size());
+    }
+    return 1;
 }

@@ -44,6 +44,19 @@ static int handler(void *user, const char *section, const char *name, const char
     return err;
 }
 
+void cleanup(std::vector<pollfd> &fds, Configs &configs) {
+    for (auto &pfd : fds)
+        close(pfd.fd);
+    unlink(SOCK_PATH);
+    // Killing all child programs.
+    for (auto &programMap : configs.programs) {
+        for (auto &program : programMap.second.programs) {
+            std::cout << "Killing the program" << program.pid << std::endl;
+            kill(-program.pid, SIGTERM); // askip faudra ptet faire des trucs en plus.
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         std::cerr << "Error: argument expected" << std::endl;
@@ -85,9 +98,13 @@ int main(int argc, char *argv[]) {
         // Dont hardcode this before sending it :)
     }
 
-    // Launch programs (this is fucked and will have to be changed to another class/function or smth);
-    if (!configs.programs.empty()) {
-        configs.programs.begin()->second.startAllPrograms(configs.programs);
+    // Launch All programs of all configs
+    for (auto &[name, cfg] : configs.programs) {
+        if (cfg.shouldAutostart())
+            if (cfg.startAllPrograms() == -1) {
+                cleanup(fds, configs);
+                return EXIT_FAILURE;
+            }
     }
 
     while (true) {
@@ -137,13 +154,17 @@ int main(int argc, char *argv[]) {
             }
 
             std::string cmd(buf);
-            handleCommands(client_fd, cmd, configs);
+            int err = handleCommands(client_fd, cmd, configs);
+            if (err == SHUTDOWN) {
+                cleanup(fds, configs);
+                return 0;
+            } else if (err == CLIENT_DISCONNECT) {
+                std::cout << "Client disconnected (fd=" << client_fd << ")\n";
+                close(client_fd);
+                fds.erase(fds.begin() + i);
+            }
         }
     }
-
-    for (auto &pfd : fds)
-        close(pfd.fd);
-    unlink(SOCK_PATH);
-
+    cleanup(fds, configs);
     return 0;
 }
