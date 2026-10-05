@@ -38,15 +38,28 @@ int ProgramConfig::parseSignals(std::string signal){
     return it->second;
 }
 
-void ProgramConfig::addEnvironnement(const std::string value){
+void ProgramConfig::addEnvironnement(std::string value){
     std::string name = "";
     std::string val = "";
     
     while(true){
-        size_t pos = value.find("=");
+        const std::size_t pos = value.find("=");
         if(pos == std::string::npos)
             break;
-        name = value.substr()
+        name = value.substr(0, pos);
+        std::cout << "The name is: " << name << std::endl;
+
+        const std::size_t pos1 = value.find_first_of(",");
+        if(pos1 != std::string::npos){
+            val = value.substr(pos + 1, pos1 - pos);
+            std::cout << "Value is: " << val << std::endl;
+            
+        }
+        else{
+            val = value.substr(pos + 1, pos1 - pos);
+            std::cout << "Value is: " << val << std::endl;
+            break;
+        }
     }
 }
 
@@ -93,8 +106,8 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
                 stopsignal = signal;
             }
         }else if (setting == "environment"){
-            std::cout << "environment " << value;
-            
+            std::cout << value << std::endl;
+            addEnvironnement(value);
         }
 
         else {
