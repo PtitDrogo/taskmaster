@@ -1,6 +1,8 @@
 #pragma once
 
 #include <iostream>
+#define SOCK_PATH "/tmp/supervisor.sock"
+
 
 class ServerConfig {
   private:
@@ -15,4 +17,5 @@ class ServerConfig {
     ~ServerConfig();
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
+    static int startDaemonServer();
 };

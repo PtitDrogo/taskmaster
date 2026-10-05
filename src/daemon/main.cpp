@@ -15,21 +15,6 @@ void sigchld_handler(int) {
     child_exited = 1; // just set a flag, do real work outside the handler
 }
 
-#define SOCK_PATH "/tmp/supervisor.sock"
-
-struct Configs {
-    ServerConfig server;
-    std::map<std::string, ProgramConfig> programs;
-
-    void printSettings() const {
-        server.printSettings();
-        for (auto &[section, cfg] : programs) {
-            std::cout << "Section: " << section << "\n";
-            cfg.printSettings();
-        }
-    }
-};
-
 /*
 Exemple:
 [program:web]
@@ -77,11 +62,9 @@ int main(int argc, char *argv[]) {
     std::cout << "I am the Daemon/Server !" << std::endl;
     configs.printSettings();
 
-    int server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (server_fd < 0) {
-        perror("socket");
-        return 1;
-    }
+    int server_fd = ServerConfig::startDaemonServer();
+    if (server_fd == -1)
+        return EXIT_FAILURE;
 
     // signal to know whats going on with children
     struct sigaction sa{};
@@ -90,25 +73,7 @@ int main(int argc, char *argv[]) {
     sa.sa_flags = SA_RESTART; // Restart whatever syscall the signal interrupted (Not guaranted)
     sigaction(SIGCHLD, &sa, nullptr);
 
-    unlink(SOCK_PATH); // remove old socket file if it exists
-
-    sockaddr_un addr{};
-    addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, SOCK_PATH, sizeof(addr.sun_path) - 1);
-
-    if (bind(server_fd, (sockaddr *)&addr, sizeof(addr)) < 0) {
-        perror("bind");
-        return 1;
-    }
-
-    if (listen(server_fd, 10) < 0) {
-        perror("listen");
-        return 1;
-    }
-
     std::cout << "Server listening on " << SOCK_PATH << std::endl;
-
-    bool flag = true;
 
     // pollfd list: index 0 is always the listening socket, rest are clients
     std::vector<pollfd> fds;
@@ -161,7 +126,7 @@ int main(int argc, char *argv[]) {
                 continue;
 
             int client_fd = fds[i].fd;
-            char buf[256];
+            char buf[256] = {0};
             ssize_t n = read(client_fd, buf, sizeof(buf) - 1);
 
             if (n <= 0) {
@@ -171,47 +136,8 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            buf[n] = '\0';
             std::string cmd(buf);
-            std::string response;
-            std::cout << "Command is " << cmd << std::endl;
-            if (cmd == "SET true") {
-                flag = true;
-                response = "OK flag set to true\n";
-            } else if (cmd == "SET false") {
-                flag = false;
-                response = "OK flag set to false\n";
-            } else if (cmd == "GET") {
-                response = std::string("STATUS ") + (flag ? "true" : "false") + "\n";
-            } else if (cmd == "STATUS") {
-                std::cout << "Properly received the Status request !\n" << std::endl;
-                for (auto config : configs.programs) {
-                    for (auto program : config.second.programs) {
-                        if (kill(program.pid, 0) == 0) {
-                            response = std::string("Program with PID ") + std::to_string(program.pid) +
-                                       std::string("is good and well !\n");
-                            write(client_fd, response.c_str(), response.size());
-                            // process exists (you have permission to signal it)
-                        } else if (errno == ESRCH) {
-                            response = std::string("Program with PID ") + std::to_string(program.pid) +
-                                       std::string("dead and buried !\n");
-                            write(client_fd, response.c_str(), response.size());
-                            // no such process — already dead and reaped, or never existed
-                        } else {
-                            response = std::string("Program with PID ") + std::to_string(program.pid) +
-                                       std::string("is in a state idk what it means !\n");
-                            write(client_fd, response.c_str(), response.size());
-                            // idk
-                        }
-                    }
-                }
-                continue;
-
-            } else {
-                response = "ERROR unknown command\n";
-            }
-
-            write(client_fd, response.c_str(), response.size());
+            handleCommands(client_fd, cmd, configs);
         }
     }
 

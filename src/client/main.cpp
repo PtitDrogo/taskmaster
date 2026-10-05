@@ -33,20 +33,9 @@ int main(int argc, char *argv[]) {
 
     config.printSettings();
 
-    int fd = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (fd < 0) {
-        perror("socket");
-        return 1;
-    }
-
-    sockaddr_un addr{};
-    addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, SOCK_PATH, sizeof(addr.sun_path) - 1);
-
-    if (connect(fd, (sockaddr *)&addr, sizeof(addr)) < 0) {
-        perror("connect");
-        return 1;
-    }
+    int fd = ClientConfig::startClient();
+    if (fd == -1)
+        return EXIT_FAILURE;
 
     char *line;
     while ((line = readline("supervisor> ")) != nullptr) {
@@ -62,15 +51,8 @@ int main(int argc, char *argv[]) {
             continue;
         } else {
             write(fd, input.c_str(), input.size());
-            std::cout << "Sending" << input.c_str() << std::endl;
-
-            char buf[256];
-            ssize_t n = read(fd, buf, sizeof(buf) - 1);
-            if (n > 0) {
-                buf[n] = '\0';
-                std::cout << buf;
-            }
-
+            std::cout << "Sending: " << input.c_str() << std::endl;
+            readResponse(fd);
         }
     }
 
