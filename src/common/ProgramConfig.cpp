@@ -100,18 +100,26 @@ pid_t ProgramConfig::startProgram() {
         perror("execve failed");
         _exit(127); // use _exit, not exit, in a failed post-fork child
     } else {
-        setpgid(pid, pid); // Le parent fou l'enfant dans le groupe de son PID
+        setpgid(pid, pid); // Le parent fout l'enfant dans le groupe de son PID
         // On fait les deux pour une histoire de race condition.
 
         // Adding the pid of this particular instance to the list to be waited on later.
-        programs.push_back({pid, "Test starting state"});
-
-        // This waiting thing happens later or smth idk.
-        //  int status;
-        //  waitpid(pid, &status, 0);
-        //  if (WIFEXITED(status)) {
-        //      std::cout << "Child exited with " << WEXITSTATUS(status) << "\n";
-        //  }
+        programs.push_back({pid});
     }
     return pid;
+}
+
+bool ProgramConfig::requestStop(program &p, int client_fd) {
+    if (p.state == State::Backoff) {
+        p.state = State::Stopped;
+        return true;
+    }
+    if (p.state != State::Running && p.state != State::Starting)
+        return false;
+    p.killing = true;
+    p.state = State::Stopping;
+    p.kill_deadline = time(nullptr) + stoptime;
+    p.waiting_client = client_fd;
+    kill(-p.pid, stopsignal); // group, since your cmds nest shells
+    return true;
 }

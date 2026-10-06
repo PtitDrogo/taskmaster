@@ -9,9 +9,14 @@
 #include <unistd.h>
 #include <vector>
 
+enum class State { Stopped, Starting, Running, Backoff, Stopping, Exited, Fatal };
+
 struct program {
     pid_t pid;
-    std::string status; // Probably en enum later on.
+    State state = State::Starting; // Probably en enum later on.
+    bool killing = false;          // a stop was requested
+    time_t kill_deadline = 0;
+    int waiting_client = -1;
 };
 
 // This hold the config of every created program.
@@ -42,6 +47,7 @@ struct ProgramConfig {
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
     pid_t startProgram();
+    bool requestStop(program &p, int client_fd);
     bool shouldAutostart() const { return autostart; }
     int startAllPrograms();
 };

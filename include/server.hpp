@@ -23,6 +23,24 @@ struct Configs {
             cfg.printSettings();
         }
     }
+
+    program *findByPid(pid_t pid) {
+        for (auto &[name, cfg] : programs) {
+            for (auto &p : cfg.programs) {
+                if (p.pid == pid)
+                    return &p;
+            }
+        }
+        return nullptr;
+    }
+
+    void killTimedOutPrograms() {
+        time_t now = time(nullptr);
+        for (auto &[name, cfg] : programs)
+            for (auto &p : cfg.programs)
+                if (p.state == State::Stopping && now > p.kill_deadline)
+                    kill(-p.pid, SIGKILL);
+    }
 };
 
 int dropPrivileges(const std::string &user);

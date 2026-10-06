@@ -80,6 +80,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
 
     // signal to know whats going on with children
+    // When a child dies, the kernel sends SIGCHLD to its parent.
     struct sigaction sa{};
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
@@ -116,18 +117,36 @@ int main(int argc, char *argv[]) {
             break;
         }
 
-        if (ready == 0) {
-            if (child_exited) {
-                child_exited = 0;
-                int status;
-                pid_t pid;
-                while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-                    std::cout << "Program with PID" << pid << "Just ended" << std::endl;
-                    // find which Program this pid belongs to, update its state
+        if (child_exited) {
+            child_exited = 0;
+            int status;
+            pid_t pid;
+
+            //////WIP
+
+            while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+                program *p = configs.findByPid(pid);
+                if (!p)
+                    continue;
+                std::cout << "Program with PID" << pid << "Just ended" << std::endl;
+                if (p->killing) { // expected, we asked for it
+                    p->state = State::Stopped;
+                    p->killing = false;
+                    if (p->waiting_client != -1) {
+                        write(p->waiting_client, "stopped\n", 8);
+                        p->waiting_client = -1;
+                    }
+                } else {
+                    // unexpected exit: EXITED / BACKOFF + autorestart logic goes here
                 }
             }
+
+            /////
+
             continue;
         }
+        if (ready == 0)
+            continue;
 
         if (fds[0].revents & POLLIN) {
             int client_fd = accept(server_fd, nullptr, nullptr);

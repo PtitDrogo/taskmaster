@@ -58,9 +58,9 @@ int handleCommands(int client_fd, std::string fullCmd, const Configs &configs) {
     } else if (cmd == "shutdown") {
         return handleShutdown(client_fd);
     } else if (cmd == "start") {
-
+    
     } else if (cmd == "stop") {
-
+        
     } else if (cmd == "restart") {
 
     }
