@@ -38,7 +38,25 @@ int ProgramConfig::parseSignals(std::string signal){
     return it->second;
 }
 
-void ProgramConfig::addEnvironnement(std::string value){
+static std::string stripQuotes(const std::string &s){
+    if(s.size() >= 2 &&
+       ((s.front() == '"' && s.back() == '"') ||
+        (s.front() == '\'' && s.back() == '\''))){
+        return s.substr(1, s.size() - 2);
+    }
+    return s;
+}
+
+static bool isValidEnvName(const std::string &name){
+    if(name.empty())
+        return false;
+    for(char c : name)
+        if(!std::isalnum(static_cast<unsigned char>(c)) && c != '_')
+            return false;
+    return true;
+}
+
+int ProgramConfig::addEnvironnement(std::string value){
     std::string name = "";
     std::string val = "";
     
@@ -47,20 +65,29 @@ void ProgramConfig::addEnvironnement(std::string value){
         if(pos == std::string::npos)
             break;
         name = value.substr(0, pos);
-        std::cout << "The name is: " << name << std::endl;
 
         const std::size_t pos1 = value.find_first_of(",");
+        if(pos > pos1){
+            return 1;
+        }
         if(pos1 != std::string::npos){
-            val = value.substr(pos + 1, pos1 - pos);
-            std::cout << "Value is: " << val << std::endl;
-            
+            val = value.substr(pos + 1, pos1 - pos - 1);
+            val = stripQuotes(val);
+            if(!isValidEnvName(val))
+                return -1;
+            this->env[name] = val;
+            value = value.substr(pos1 + 1, value.length() - 1 - pos1);
         }
         else{
-            val = value.substr(pos + 1, pos1 - pos);
-            std::cout << "Value is: " << val << std::endl;
-            break;
+            val = value.substr(pos + 1, value.length() - pos);
+            val = stripQuotes(val);
+            if(!isValidEnvName(val))
+                return -1;
+            this->env[name] = val;
+            return 0;
         }
     }
+    return 1;
 }
 
 int ProgramConfig::parseSetting(const std::string &setting, const std::string &value) {
@@ -106,10 +133,12 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
                 stopsignal = signal;
             }
         }else if (setting == "environment"){
-            std::cout << value << std::endl;
-            addEnvironnement(value);
+            int err = addEnvironnement(value);
+            if(err){
+                std::cerr << "Unknown setting: " << setting << " in [" << name << "]\n";
+                return 0;
+            }
         }
-
         else {
             std::cerr << "Unknown setting: " << setting << " in [" << name << "]\n";
             return 0;

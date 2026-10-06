@@ -43,5 +43,5 @@ struct ProgramConfig {
     int createProgram(const char *cmd);
     int startAllPrograms(const std::map<std::string, ProgramConfig> &programs);
     int parseSignals(std::string signal);
-    void addEnvironnement(std::string value);
+    int addEnvironnement(std::string value);
 };
