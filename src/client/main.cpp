@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <utils.hpp>
 
 #define SOCK_PATH "/tmp/supervisor.sock"
 
@@ -50,7 +51,7 @@ int main(int argc, char *argv[]) {
         } else if (input.empty()) {
             continue;
         } else {
-            write(fd, input.c_str(), input.size());
+            reply(fd, input);
             std::cout << "Sending: " << input.c_str() << std::endl;
             readResponseAndPrint(fd);
         }

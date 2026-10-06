@@ -35,6 +35,13 @@ struct Configs {
         }
         return {nullptr, nullptr};
     }
+
+    void forgetClient(int fd) {
+        for (auto &[name, cfg] : programs)
+            for (auto &p : cfg.programs)
+                if (p.waiting_client == fd)
+                    p.waiting_client = -1;
+    }
 };
 
 int dropPrivileges(const std::string &user);

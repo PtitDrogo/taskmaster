@@ -1,9 +1,9 @@
 #include "server.hpp"
+#include "utils.hpp"
 #include <sstream>
 
 int handleShutdown(int client_fd) {
-    std::string response = "Really shut the remote supervisord process down y/N?";
-    write(client_fd, response.c_str(), response.size());
+    reply(client_fd, "Really shut the remote supervisord process down y/N?\n");
 
     char buf[256] = {0};
     ssize_t n = read(client_fd, buf, sizeof(buf) - 1);
@@ -17,6 +17,60 @@ int handleShutdown(int client_fd) {
     } else {
         return 1;
     }
+}
+
+static ProgramConfig *findConfig(Configs &configs, const std::string &name) {
+    auto it = configs.programs.find(name);
+    return it == configs.programs.end() ? nullptr : &it->second;
+}
+
+static void handleStart(int client_fd, Configs &configs, const std::string &name) {
+    ProgramConfig *cfg = findConfig(configs, name);
+    if (!cfg) {
+        reply(client_fd, "ERROR no such program: " + name + "\n");
+        return;
+    }
+
+    // autostart=false: the entries were never created
+    if (cfg->programs.empty()) {
+        cfg->startAllPrograms();
+        reply(client_fd, name + ": started\n");
+        return;
+    }
+
+    int started = 0;
+    for (auto &p : cfg->programs) {
+        if (p.state == State::Stopped || p.state == State::Exited || p.state == State::Fatal) {
+            p.currRetries = 0; // manual start = fresh retry budget
+            cfg->startProgram(p);
+            ++started;
+        }
+    }
+    reply(client_fd, started ? name + ": started\n" : name + ": ERROR already started\n");
+}
+
+static void handleStop(int client_fd, Configs &configs, const std::string &name) {
+    ProgramConfig *cfg = findConfig(configs, name);
+    if (!cfg) {
+        reply(client_fd, "ERROR no such program: " + name + "\n");
+        return;
+    }
+
+    int accepted = 0;
+    int waiting = 0;
+    for (auto &p : cfg->programs) {
+        if (!cfg->requestStop(p, client_fd)) // false = not running
+            continue;
+        ++accepted;
+        if (p.state == State::Stopping) // signal sent, answer comes later
+            ++waiting;
+    }
+
+    if (accepted == 0)
+        reply(client_fd, name + ": ERROR not running\n");
+    else if (waiting == 0)
+        reply(client_fd, name + ": stopped\n");
+    // otherwise the main loop writes "stopped" when each process is reaped
 }
 
 static const char *stateToString(State s) {
@@ -47,8 +101,7 @@ void handleStatusCmd(int client_fd, const Configs &configs) {
         int i = 0;
         for (const auto &p : cfg.programs) {
             out += name + ":" + std::to_string(i++) + "  " + stateToString(p.state);
-            if (p.state == State::Running || p.state == State::Starting ||
-                p.state == State::Stopping) {
+            if (p.state == State::Running || p.state == State::Starting || p.state == State::Stopping) {
                 out += "  pid " + std::to_string(p.pid);
                 out += ", uptime " + std::to_string(now - p.start_time) + "s";
             } else if (p.state == State::Backoff) {
@@ -69,15 +122,19 @@ int handleCommands(int client_fd, std::string fullCmd, Configs &configs) {
     iss >> cmd;
     iss >> arg;
 
-    if (cmd == "STATUS") {
+    if (cmd == "status") {
         std::cout << "Properly received the Status request !\n" << std::endl;
         handleStatusCmd(client_fd, configs);
     } else if (cmd == "shutdown") {
         return handleShutdown(client_fd);
     } else if (cmd == "start") {
-
+        if (arg.empty())
+            reply(client_fd, "ERROR usage: " + cmd + " <program>\n");
+        handleStart(client_fd, configs, arg);
     } else if (cmd == "stop") {
-
+        if (arg.empty())
+            reply(client_fd, "ERROR usage: " + cmd + " <program>\n");
+        handleStop(client_fd, configs, arg);
     } else if (cmd == "restart") {
 
     }

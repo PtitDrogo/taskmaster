@@ -1,5 +1,6 @@
 #include "ServerConfig.hpp"
 #include "server.hpp"
+#include "utils.hpp"
 #include <csignal>
 #include <cstring>
 #include <poll.h>
@@ -36,8 +37,7 @@ static int handler(void *user, const char *section, const char *name, const char
         std::string progname = sect.substr(8); // strip "program:"
         ProgramConfig &pc = cfg->programs[progname];
         err = pc.parseSetting(setting, val);
-    }
-    else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
+    } else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
         err = cfg->server.parseSetting(setting, val);
     } else if (sect.rfind("rpcinterface:", 0) == 0) {
         // Idk what that is I dont think we need to handle that
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
                 cfg->onExit(*p, status);
 
                 if (p->state == State::Stopped && p->waiting_client != -1) {
-                    write(p->waiting_client, "stopped\n", 8);
+                    reply(p->waiting_client, "stopped\n");
                     p->waiting_client = -1;
                 }
             }
@@ -166,6 +166,7 @@ int main(int argc, char *argv[]) {
 
             if (n <= 0) {
                 std::cout << "Client disconnected (fd=" << client_fd << ")\n";
+                configs.forgetClient(client_fd);
                 close(client_fd);
                 fds.erase(fds.begin() + i);
                 continue;
@@ -178,6 +179,7 @@ int main(int argc, char *argv[]) {
                 return 0;
             } else if (err == CLIENT_DISCONNECT) {
                 std::cout << "Client disconnected (fd=" << client_fd << ")\n";
+                configs.forgetClient(client_fd);
                 close(client_fd);
                 fds.erase(fds.begin() + i);
             }
