@@ -11,6 +11,7 @@
 
 #define SHUTDOWN -2
 #define CLIENT_DISCONNECT -3
+#define ABORTED -4
 
 struct Configs {
     ServerConfig server;

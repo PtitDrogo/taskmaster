@@ -13,9 +13,11 @@ int handleShutdown(int client_fd) {
     }
     std::string promptRes(buf);
     if (promptRes == "y") {
+        reply(client_fd, "Shutting down\n");
         return SHUTDOWN;
     } else {
-        return 1;
+        reply(client_fd, "Shutdown aborted\n");
+        return ABORTED;
     }
 }
 
@@ -110,7 +112,7 @@ void handleStatusCmd(int client_fd, const Configs &configs) {
             out += "\n";
         }
     }
-    write(client_fd, out.c_str(), out.size());
+    reply(client_fd, out);
 }
 
 int handleCommands(int client_fd, std::string fullCmd, Configs &configs) {
@@ -128,20 +130,23 @@ int handleCommands(int client_fd, std::string fullCmd, Configs &configs) {
     } else if (cmd == "shutdown") {
         return handleShutdown(client_fd);
     } else if (cmd == "start") {
-        if (arg.empty())
+        if (arg.empty()) {
             reply(client_fd, "ERROR usage: " + cmd + " <program>\n");
+            return 1;
+        }
         handleStart(client_fd, configs, arg);
     } else if (cmd == "stop") {
-        if (arg.empty())
+        if (arg.empty()) {
             reply(client_fd, "ERROR usage: " + cmd + " <program>\n");
+            return 1;
+        }
         handleStop(client_fd, configs, arg);
     } else if (cmd == "restart") {
 
     }
 
     else {
-        std::string response = "ERROR unknown command\n";
-        write(client_fd, response.c_str(), response.size());
+        reply(client_fd, "ERROR unknown command\n");
     }
     return 1;
 }

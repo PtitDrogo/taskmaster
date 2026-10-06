@@ -58,7 +58,6 @@ void cleanup(std::vector<pollfd> &fds, Configs &configs) {
     }
 }
 
-
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         std::cerr << "Error: argument expected" << std::endl;
@@ -133,8 +132,16 @@ int main(int argc, char *argv[]) {
                 cfg->onExit(*p, status);
 
                 if (p->state == State::Stopped && p->waiting_client != -1) {
-                    reply(p->waiting_client, "stopped\n");
+
+                    int fd = p->waiting_client;
                     p->waiting_client = -1;
+                    // This shit is just so we only send one stop per groups.
+                    bool othersPending = false;
+                    for (auto &q : cfg->programs)
+                        if (q.waiting_client == fd)
+                            othersPending = true;
+                    if (!othersPending)
+                        reply(fd, "stopped\n");
                 }
             }
         }
@@ -182,6 +189,7 @@ int main(int argc, char *argv[]) {
                 configs.forgetClient(client_fd);
                 close(client_fd);
                 fds.erase(fds.begin() + i);
+            } else {
             }
         }
     }
