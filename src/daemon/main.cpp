@@ -58,6 +58,30 @@ void cleanup(std::vector<pollfd> &fds, Configs &configs) {
     }
 }
 
+void handleDeadProcesses(Configs &configs) {
+    int status;
+    pid_t pid;
+
+    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+        auto [cfg, p] = configs.findByPid(pid);
+        if (!p)
+            continue;
+        cfg->onExit(*p, status);
+
+        int fd = p->waiting_client;
+        if (fd != -1) {
+            p->waiting_client = -1;
+            bool othersPending = false;
+            // we only send a reply once all the processes of a config are dead.
+            for (auto &q : cfg->programs)
+                if (q.waiting_client == fd)
+                    othersPending = true;
+            if (!othersPending)
+                reply(fd, p->state == State::Starting ? "restarted\n" : "stopped\n");
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         std::cerr << "Error: argument expected" << std::endl;
@@ -121,29 +145,7 @@ int main(int argc, char *argv[]) {
 
         if (child_exited) {
             child_exited = 0;
-            int status;
-            pid_t pid;
-
-            while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-                auto [cfg, p] = configs.findByPid(pid);
-                if (!p)
-                    continue;
-                std::cout << "Program with PID" << pid << "Just ended" << std::endl;
-                cfg->onExit(*p, status);
-
-                if (p->state == State::Stopped && p->waiting_client != -1) {
-
-                    int fd = p->waiting_client;
-                    p->waiting_client = -1;
-                    // This shit is just so we only send one stop per groups.
-                    bool othersPending = false;
-                    for (auto &q : cfg->programs)
-                        if (q.waiting_client == fd)
-                            othersPending = true;
-                    if (!othersPending)
-                        reply(fd, "stopped\n");
-                }
-            }
+            handleDeadProcesses(configs);
         }
 
         time_t now = time(nullptr);
@@ -178,7 +180,7 @@ int main(int argc, char *argv[]) {
                 fds.erase(fds.begin() + i);
                 continue;
             }
-
+            
             std::string cmd(buf);
             int err = handleCommands(client_fd, cmd, configs);
             if (err == SHUTDOWN) {
@@ -189,7 +191,6 @@ int main(int argc, char *argv[]) {
                 configs.forgetClient(client_fd);
                 close(client_fd);
                 fds.erase(fds.begin() + i);
-            } else {
             }
         }
     }

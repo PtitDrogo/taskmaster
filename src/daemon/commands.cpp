@@ -43,7 +43,7 @@ static void handleStart(int client_fd, Configs &configs, const std::string &name
     int started = 0;
     for (auto &p : cfg->programs) {
         if (p.state == State::Stopped || p.state == State::Exited || p.state == State::Fatal) {
-            p.currRetries = 0; // manual start = fresh retry budget
+            p.curr_retries = 0; // manual start = fresh retry budget
             cfg->startProgram(p);
             ++started;
         }
@@ -73,6 +73,36 @@ static void handleStop(int client_fd, Configs &configs, const std::string &name)
     else if (waiting == 0)
         reply(client_fd, name + ": stopped\n");
     // otherwise the main loop writes "stopped" when each process is reaped
+}
+
+static void handleRestart(int client_fd, Configs &configs, const std::string &name) {
+    ProgramConfig *cfg = findConfig(configs, name);
+    if (!cfg) {
+        reply(client_fd, "ERROR no such program: " + name + "\n");
+        return;
+    }
+
+    // autostart=false: the entries were never created
+    if (cfg->programs.empty()) {
+        cfg->startAllPrograms();
+        reply(client_fd, name + ": restarted\n");
+        return;
+    }
+
+    bool should_wait = false;
+    for (auto &p : cfg->programs) {
+        if (p.state == State::Running || p.state == State::Starting) {
+            cfg->requestStop(p, client_fd); // -> Stopping, SIGKILL after stoptime
+            p.restarting = true;            // the main loop starts it once it is reaped
+            should_wait = true;
+        } else if (p.state != State::Stopping) { // Stopped, Exited, Fatal, Backoff
+            p.curr_retries = 0;
+            cfg->startProgram(p); // nothing to wait for, start right away
+        }
+    }
+    if (!should_wait)
+        reply(client_fd, name + ": restarted\n");
+    // otherwise the main loop answers when the last process has been restarted
 }
 
 static const char *stateToString(State s) {
@@ -107,7 +137,7 @@ void handleStatusCmd(int client_fd, const Configs &configs) {
                 out += "  pid " + std::to_string(p.pid);
                 out += ", uptime " + std::to_string(now - p.start_time) + "s";
             } else if (p.state == State::Backoff) {
-                out += "  retry " + std::to_string(p.currRetries);
+                out += "  retry " + std::to_string(p.curr_retries);
             }
             out += "\n";
         }
@@ -142,10 +172,12 @@ int handleCommands(int client_fd, std::string fullCmd, Configs &configs) {
         }
         handleStop(client_fd, configs, arg);
     } else if (cmd == "restart") {
-
-    }
-
-    else {
+        if (arg.empty()) {
+            reply(client_fd, "ERROR usage: " + cmd + " <program>\n");
+            return 1;
+        }
+        handleRestart(client_fd, configs, arg);
+    } else {
         reply(client_fd, "ERROR unknown command\n");
     }
     return 1;

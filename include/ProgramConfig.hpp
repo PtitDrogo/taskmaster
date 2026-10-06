@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
@@ -8,7 +9,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
-#include <algorithm>
 
 enum class State { Stopped, Starting, Running, Backoff, Stopping, Exited, Fatal };
 
@@ -16,11 +16,12 @@ struct program {
     pid_t pid = -1;
     State state = State::Starting;
     time_t start_time = 0;
-    int currRetries = 0;  // failed starts in a row
+    int curr_retries = 0; // failed starts in a row
     time_t backoff_until = 0;
     bool killing = false; // a stop was requested
     time_t kill_deadline = 0;
     int waiting_client = -1;
+    bool restarting = false;
 };
 
 // This hold the config of every created program.
