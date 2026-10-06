@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
         } else {
             write(fd, input.c_str(), input.size());
             std::cout << "Sending: " << input.c_str() << std::endl;
-            readResponse(fd);
+            readResponseAndPrint(fd);
         }
     }
 
