@@ -57,6 +57,7 @@ void cleanup(std::vector<pollfd> &fds, Configs &configs) {
     }
 }
 
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         std::cerr << "Error: argument expected" << std::endl;

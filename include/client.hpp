@@ -10,4 +10,4 @@
 
 #define HELP_STRING "Help - Status - Start - Stop\n Restart - Update - Shutdown"
 
-void readResponse(int fd);
+void readResponseAndPrint(int fd);
