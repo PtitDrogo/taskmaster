@@ -111,10 +111,11 @@ int main(int argc, char *argv[]) {
     while (true) {
         int ready = poll(fds.data(), fds.size(), 1000);
         if (ready < 0) {
-            if (errno == EINTR)
-                continue; // interrupted by a signal, just retry
-            perror("poll");
-            break;
+            if (errno != EINTR) {
+                perror("poll");
+                break;
+            }
+            ready = 0; // We got interrupted we still do down.
         }
 
         if (child_exited) {
@@ -122,29 +123,25 @@ int main(int argc, char *argv[]) {
             int status;
             pid_t pid;
 
-            //////WIP
-
             while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-                program *p = configs.findByPid(pid);
+                auto [cfg, p] = configs.findByPid(pid);
                 if (!p)
                     continue;
                 std::cout << "Program with PID" << pid << "Just ended" << std::endl;
-                if (p->killing) { // expected, we asked for it
-                    p->state = State::Stopped;
-                    p->killing = false;
-                    if (p->waiting_client != -1) {
-                        write(p->waiting_client, "stopped\n", 8);
-                        p->waiting_client = -1;
-                    }
-                } else {
-                    // unexpected exit: EXITED / BACKOFF + autorestart logic goes here
+                cfg->onExit(*p, status);
+
+                if (p->state == State::Stopped && p->waiting_client != -1) {
+                    write(p->waiting_client, "stopped\n", 8);
+                    p->waiting_client = -1;
                 }
             }
-
-            /////
-
-            continue;
         }
+
+        time_t now = time(nullptr);
+        for (auto &[name, cfg] : configs.programs)
+            for (auto &p : cfg.programs)
+                cfg.tick(p, now);
+
         if (ready == 0)
             continue;
 

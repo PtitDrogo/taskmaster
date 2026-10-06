@@ -10,7 +10,7 @@ void ProgramConfig::printSettings() const {
               << "  autostart: " << std::boolalpha << autostart << "\n"
               << "  numprocs: " << numprocs << "\n"
               << "  autorestart: " << static_cast<int>(autorestart) << "\n"
-              << "  starttime: " << starttime << "\n"
+              << "  startsecs: " << startsecs << "\n"
               << "  startretries: " << startretries << "\n"
               << "  stopsignal: " << stopsignal << "\n"
               << "  stoptime: " << stoptime << "\n"
@@ -32,8 +32,8 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             autostart = (value == "true");
         } else if (setting == "numprocs") {
             numprocs = std::stoi(value);
-        } else if (setting == "starttime") {
-            starttime = std::stoi(value);
+        } else if (setting == "startsecs") {
+            startsecs = std::stoi(value);
         } else if (setting == "startretries") {
             startretries = std::stoi(value);
         } else if (setting == "stoptime") {
@@ -76,37 +76,42 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
 }
 
 int ProgramConfig::startAllPrograms() {
-    for (int i = 0; i < numprocs; ++i)
-        if (startProgram() == -1)
-            return -1;
+    for (int i = 0; i < numprocs; ++i) {
+        programs.emplace_back();
+        startProgram(programs.back());
+    }
     return 1;
 }
 
 // we gotta just call /bin/sh on everything
-pid_t ProgramConfig::startProgram() {
+void ProgramConfig::startProgram(program &p) {
     pid_t pid = fork();
 
     if (pid < 0) {
-        perror("fork failed");
-        return -1;
-    } else if (pid == 0) {
+        perror("fork");
+        p.state = State::Fatal;
+        return;
+    }
+    if (pid == 0) {
         setpgid(0, 0); // L'enfant se fou dans son groupe 0
         // Execve takes in char* and not const char*, so we have to do this.
         char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)cmd.c_str(), nullptr};
         char *envp[] = {nullptr}; // Pass env later.
         execve("/bin/sh", argv, envp);
 
-        // Only reached if execve fails
         perror("execve failed");
         _exit(127); // use _exit, not exit, in a failed post-fork child
     } else {
         setpgid(pid, pid); // Le parent fout l'enfant dans le groupe de son PID
-        // On fait les deux pour une histoire de race condition.
+                           // On fait les deux pour une histoire de race condition.
 
-        // Adding the pid of this particular instance to the list to be waited on later.
-        programs.push_back({pid});
+        // Were updating the program object passed in
+        // We do this so that when we restart a program, we use the same object.
+        p.pid = pid;
+        p.state = State::Starting;
+        p.start_time = time(nullptr);
+        p.killing = false;
     }
-    return pid;
 }
 
 bool ProgramConfig::requestStop(program &p, int client_fd) {
@@ -122,4 +127,52 @@ bool ProgramConfig::requestStop(program &p, int client_fd) {
     p.waiting_client = client_fd;
     kill(-p.pid, stopsignal); // group, since your cmds nest shells
     return true;
+}
+
+void ProgramConfig::tick(program &p, time_t now) {
+    switch (p.state) {
+    case State::Starting:
+        if (now - p.start_time >= startsecs) { // survived long enough
+            p.state = State::Running;
+            p.currRetries = 0;
+        }
+        break;
+    case State::Backoff:
+        if (now >= p.backoff_until)
+            startProgram(p); // retry
+        break;
+    case State::Stopping:
+        if (now > p.kill_deadline)
+            kill(-p.pid, SIGKILL); // replaces killTimedOutPrograms
+        break;
+    default:
+        break;
+    }
+}
+
+void ProgramConfig::onExit(program &p, int status) {
+    // we Asked for it
+    if (p.killing) {
+        p.state = State::Stopped;
+        p.killing = false;
+        return;
+    }
+    time_t now = time(nullptr);
+    bool diedTooEarly = p.state == State::Starting && now - p.start_time < startsecs;
+    if (diedTooEarly) {
+        // died too early: failed start
+        if (++p.currRetries > startretries) {
+            p.state = State::Fatal;
+        } else {
+            p.state = State::Backoff;
+            int delay = p.currRetries * 2;
+            p.backoff_until = now + delay;
+        }
+        return;
+    }
+    p.state = State::Exited;
+    bool returnCodeIsInList = std::find(exitcodes.begin(), exitcodes.end(), WEXITSTATUS(status)) != exitcodes.end();
+    bool diedNormally = WIFEXITED(status) && returnCodeIsInList;
+    if (autorestart == AutoRestart::Always || (autorestart == AutoRestart::Unexpected && !diedNormally))
+        startProgram(p);
 }

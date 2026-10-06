@@ -8,13 +8,17 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
+#include <algorithm>
 
 enum class State { Stopped, Starting, Running, Backoff, Stopping, Exited, Fatal };
 
 struct program {
-    pid_t pid;
-    State state = State::Starting; // Probably en enum later on.
-    bool killing = false;          // a stop was requested
+    pid_t pid = -1;
+    State state = State::Starting;
+    time_t start_time = 0;
+    int currRetries = 0;  // failed starts in a row
+    time_t backoff_until = 0;
+    bool killing = false; // a stop was requested
     time_t kill_deadline = 0;
     int waiting_client = -1;
 };
@@ -29,7 +33,6 @@ struct ProgramConfig {
     int startsecs = 1;
     enum class AutoRestart { Always, Never, Unexpected } autorestart = AutoRestart::Unexpected;
     std::vector<int> exitcodes = {0};
-    int starttime = 1;
     int startretries = 3;
     int stopsignal = SIGTERM;
     int stoptime = 10;
@@ -46,8 +49,11 @@ struct ProgramConfig {
 
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
-    pid_t startProgram();
+    void startProgram(program &p);
     bool requestStop(program &p, int client_fd);
     bool shouldAutostart() const { return autostart; }
     int startAllPrograms();
+
+    void tick(program &p, time_t now);
+    void onExit(program &p, int status);
 };

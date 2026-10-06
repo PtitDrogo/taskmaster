@@ -24,24 +24,18 @@ struct Configs {
         }
     }
 
-    program *findByPid(pid_t pid) {
-        for (auto &[name, cfg] : programs) {
-            for (auto &p : cfg.programs) {
-                if (p.pid == pid)
-                    return &p;
+    std::pair<ProgramConfig *, program *> findByPid(pid_t pid) {
+        if (pid <= 0)
+            return {nullptr, nullptr};
+        for (auto &[name, config] : programs) {
+            for (auto &program : config.programs) {
+                if (program.pid == pid)
+                    return {&config, &program};
             }
         }
-        return nullptr;
-    }
-
-    void killTimedOutPrograms() {
-        time_t now = time(nullptr);
-        for (auto &[name, cfg] : programs)
-            for (auto &p : cfg.programs)
-                if (p.state == State::Stopping && now > p.kill_deadline)
-                    kill(-p.pid, SIGKILL);
+        return {nullptr, nullptr};
     }
 };
 
 int dropPrivileges(const std::string &user);
-int handleCommands(int client_fd, std::string fullCmd, const Configs &configs);
+int handleCommands(int client_fd, std::string fullCmd, Configs &configs);

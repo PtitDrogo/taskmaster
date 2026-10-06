@@ -43,7 +43,7 @@ void handleStatusCmd(int client_fd, const Configs &configs) {
     }
 }
 
-int handleCommands(int client_fd, std::string fullCmd, const Configs &configs) {
+int handleCommands(int client_fd, std::string fullCmd, Configs &configs) {
     std::cout << "Full Command is " << fullCmd << std::endl;
 
     std::istringstream iss(fullCmd);
