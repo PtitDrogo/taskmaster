@@ -34,7 +34,7 @@ struct ProgramConfig {
     enum class AutoRestart { Always, Never, Unexpected } autorestart = AutoRestart::Unexpected;
     std::vector<int> exitcodes = {0};
     int startretries = 3;
-    int stopsignal = SIGTERM;
+    int stopsignal = SIGINT;
     int stoptime = 10;
     bool discard_stdout = false, discard_stderr = false;
     std::string stdout_logfile, stderr_logfile;
@@ -49,11 +49,13 @@ struct ProgramConfig {
 
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
-    void startProgram(program &p);
     bool requestStop(program &p, int client_fd);
     bool shouldAutostart() const { return autostart; }
+    void startProgram(program &p);
     int startAllPrograms();
 
     void tick(program &p, time_t now);
     void onExit(program &p, int status);
+    int parseSignals(std::string signal);
+    int addEnvironnement(std::string value);
 };

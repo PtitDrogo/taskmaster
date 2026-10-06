@@ -36,7 +36,8 @@ static int handler(void *user, const char *section, const char *name, const char
         std::string progname = sect.substr(8); // strip "program:"
         ProgramConfig &pc = cfg->programs[progname];
         err = pc.parseSetting(setting, val);
-    } else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
+    }
+    else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
         err = cfg->server.parseSetting(setting, val);
     } else if (sect.rfind("rpcinterface:", 0) == 0) {
         // Idk what that is I dont think we need to handle that

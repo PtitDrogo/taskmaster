@@ -1,4 +1,5 @@
 #include "ProgramConfig.hpp"
+#include <unordered_map>
 
 ProgramConfig::ProgramConfig(/* args */) {}
 
@@ -22,6 +23,71 @@ void ProgramConfig::printSettings() const {
         for (auto &[k, v] : env)
             std::cout << k << "=" << v << "\n";
     }
+}
+
+int ProgramConfig::parseSignals(std::string signal){
+    const std::unordered_map<std::string, int> signals = {
+        {"HUP", SIGHUP},   {"INT", SIGINT},   {"QUIT", SIGQUIT},
+        {"KILL", SIGKILL}, {"TERM", SIGTERM}, {"USR1", SIGUSR1},
+        {"USR2", SIGUSR2}
+    };
+
+    auto it = signals.find(signal);
+    if (it == signals.end())
+        return -1;
+    return it->second;
+}
+
+static std::string stripQuotes(const std::string &s){
+    if(s.size() >= 2 &&
+       ((s.front() == '"' && s.back() == '"') ||
+        (s.front() == '\'' && s.back() == '\''))){
+        return s.substr(1, s.size() - 2);
+    }
+    return s;
+}
+
+static bool isValidEnvName(const std::string &name){
+    if(name.empty())
+        return false;
+    for(char c : name)
+        if(!std::isalnum(static_cast<unsigned char>(c)) && c != '_')
+            return false;
+    return true;
+}
+
+int ProgramConfig::addEnvironnement(std::string value){
+    std::string name = "";
+    std::string val = "";
+    
+    while(true){
+        const std::size_t pos = value.find("=");
+        if(pos == std::string::npos)
+            break;
+        name = value.substr(0, pos);
+
+        const std::size_t pos1 = value.find_first_of(",");
+        if(pos > pos1){
+            return 1;
+        }
+        if(pos1 != std::string::npos){
+            val = value.substr(pos + 1, pos1 - pos - 1);
+            val = stripQuotes(val);
+            if(!isValidEnvName(val))
+                return -1;
+            this->env[name] = val;
+            value = value.substr(pos1 + 1, value.length() - 1 - pos1);
+        }
+        else{
+            val = value.substr(pos + 1, value.length() - pos);
+            val = stripQuotes(val);
+            if(!isValidEnvName(val))
+                return -1;
+            this->env[name] = val;
+            return 0;
+        }
+    }
+    return 1;
 }
 
 int ProgramConfig::parseSetting(const std::string &setting, const std::string &value) {
@@ -61,8 +127,18 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             exitcodes.push_back(std::stoi(value));
         } else if (setting == "startsecs") {
             startsecs = std::stoi(value);
+        }else if (setting == "stopsignal"){
+            int signal = parseSignals(value);
+            if(signal != -1){
+                stopsignal = signal;
+            }
+        }else if (setting == "environment"){
+            int err = addEnvironnement(value);
+            if(err){
+                std::cerr << "Unknown setting: " << setting << " in [" << name << "]\n";
+                return 0;
+            }
         }
-
         else {
             std::cerr << "Unknown setting: " << setting << " in [" << name << "]\n";
             return 0;
