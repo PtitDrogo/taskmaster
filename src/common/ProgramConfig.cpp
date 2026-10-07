@@ -15,13 +15,15 @@ void ProgramConfig::printSettings() const {
               << "  startretries: " << startretries << "\n"
               << "  stopsignal: " << stopsignal << "\n"
               << "  stoptime: " << stoptime << "\n"
+              << "  stdout logfile: " << stdout_logfile << "\n"
+              << "  stderr logfile: " << stderr_logfile << "\n"
               << "  workingdir: " << workingdir << "\n"
               << "  umask: " << std::oct << umask << std::dec << "\n";
 
     if (!env.empty()) {
         std::cout << "  env:\n";
-        for (auto &[k, v] : env)
-            std::cout << k << "=" << v << "\n";
+        for (auto &v: env)
+            std::cout << "\t" << v << "\n";
     }
 }
 
@@ -75,7 +77,7 @@ int ProgramConfig::addEnvironnement(std::string value){
             val = stripQuotes(val);
             if(!isValidEnvName(val))
                 return -1;
-            this->env[name] = val;
+            this->env.push_back(name + "=" + val);
             value = value.substr(pos1 + 1, value.length() - 1 - pos1);
         }
         else{
@@ -83,7 +85,7 @@ int ProgramConfig::addEnvironnement(std::string value){
             val = stripQuotes(val);
             if(!isValidEnvName(val))
                 return -1;
-            this->env[name] = val;
+            this->env.push_back(name + "=" + val);
             return 0;
         }
     }
@@ -112,6 +114,7 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             discard_stderr = (value == "true");
         } else if (setting == "stdout_logfile") {
             stdout_logfile = value;
+            std::cout << "output " << stdout_logfile << std::endl;
         } else if (setting == "stderr_logfile") {
             stderr_logfile = value;
         } else if (setting == "umask") {
@@ -151,25 +154,60 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
     return 1;
 }
 
-int ProgramConfig::startAllPrograms(const std::map<std::string, ProgramConfig> &programs) {
-    int err = 1;
-    for (auto program : programs) {
-        err = createProgram(program.second.cmd.c_str());
-    }
-    return err;
+void ProgramConfig::redirectFiles(int fd_out, int fd_err){
+    int devnull = open("/dev/null", O_RDONLY);
+    dup2(devnull, STDIN_FILENO);
+    close(devnull);
+
+    dup2(fd_out, STDOUT_FILENO);
+    close (fd_out);
+    dup2(fd_err, STDERR_FILENO);
+    close (fd_err);
 }
 
+static int openLog(const std::string &path) {
+    const char *p = path.empty() ? "/dev/null" : path.c_str();
+    return open(p, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
+}
+
+// char *envp[] ProgramConfig::fillEnvp(){
+//     auto it = this->env.begin();
+    
+// }
+
 // we gotta just call /bin/sh on everything
-int ProgramConfig::createProgram(const char *cmd) {
+int ProgramConfig::createProgram() {
+
+    //handle error opening stdout and stderr in parent
+    int out = openLog(this->stdout_logfile);
+    if (out < 0) {
+        std::cout << "Error: The directory named as part of the path " 
+            << this->stdout_logfile << "does not exist in section '" << 
+            this->name << "' (file: '" << "./myconfigfile.conf" << "')\n";
+        return errno;
+    }
+    int err = openLog(this->stderr_logfile);
+    if (err < 0) {
+        std::cout << "Error: The directory named as part of the path " 
+            << this->stdout_logfile << "does not exist in section '" << 
+            this->name << "' (file: '" << "./myconfigfile.conf" << "')\n";
+        close(out);
+        return errno;
+    }
+
+    //fork
     pid_t pid = fork();
 
     if (pid < 0) {
         perror("fork failed");
-        return 1;
+        return errno;
     } else if (pid == 0) {
         // Execve takes in char* and not const char*, so we have to do this.
-        char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)cmd, nullptr};
+        char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char*)this->cmd.data(), nullptr};
         char *envp[] = {nullptr}; // Pass env later.
+
+        //redirecting to files
+        this->redirectFiles(out, err);
 
         execve("/bin/sh", argv, envp);
 
@@ -177,6 +215,8 @@ int ProgramConfig::createProgram(const char *cmd) {
         perror("execve failed");
         _exit(127); // use _exit, not exit, in a failed post-fork child
     } else {
+        close(out);
+        close(err);
         // Adding the pid of this particular instance to the list to be waited on later.
         programs.push_back({pid, "Test starting state"});
 
@@ -187,5 +227,5 @@ int ProgramConfig::createProgram(const char *cmd) {
         //      std::cout << "Child exited with " << WEXITSTATUS(status) << "\n";
         //  }
     }
-    return 1;
+    return 0;
 }

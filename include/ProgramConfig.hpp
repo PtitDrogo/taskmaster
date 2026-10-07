@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
+#include <fcntl.h>
 
 struct program {
     pid_t pid;
@@ -15,7 +16,7 @@ struct program {
 };
 
 // This hold the config of every created program.
-struct ProgramConfig {
+class ProgramConfig {
   private:
     std::string name;
     std::string cmd;
@@ -29,8 +30,9 @@ struct ProgramConfig {
     int stopsignal = SIGINT;
     int stoptime = 10;
     bool discard_stdout = false, discard_stderr = false;
-    std::string stdout_logfile, stderr_logfile;
-    std::map<std::string, std::string> env;
+    std::string stdout_logfile = "", stderr_logfile = "";
+    std::vector<std::string> env;
+    std::vector<char *> envptr;
     std::string workingdir;
     mode_t umask = 022; // Octal value, this is about setting the files perimission this program will create.
 
@@ -40,8 +42,10 @@ struct ProgramConfig {
     ~ProgramConfig();
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
-    int createProgram(const char *cmd);
+    int createProgram();
     int startAllPrograms(const std::map<std::string, ProgramConfig> &programs);
     int parseSignals(std::string signal);
     int addEnvironnement(std::string value);
+    void redirectFiles(int fd_out, int fd_err);
+    // char *envp[] fillEnvp();
 };

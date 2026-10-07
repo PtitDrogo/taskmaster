@@ -20,6 +20,19 @@ struct Configs {
             cfg.printSettings();
         }
     }
+
+    int startAllPrograms(){
+        int err = 0;
+        for (auto program : this->programs) {
+            ProgramConfig prog = program.second;
+            err = prog.createProgram();
+            if(err){
+                return err;
+            }
+            std::cout << "successfully creating process\n";
+        }
+        return err;
+    }
 };
 
 int dropPrivileges(const std::string &user);

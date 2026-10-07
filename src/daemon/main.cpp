@@ -13,6 +13,7 @@ volatile sig_atomic_t child_exited = 0;
 
 void sigchld_handler(int) {
     child_exited = 1; // just set a flag, do real work outside the handler
+    std::cout << "signal handler\n";
 }
 
 /*
@@ -88,7 +89,14 @@ int main(int argc, char *argv[]) {
 
     // Launch programs (this is fucked and will have to be changed to another class/function or smth);
     if (!configs.programs.empty()) {
-        configs.programs.begin()->second.startAllPrograms(configs.programs);
+        int err = configs.startAllPrograms();
+        if(err){
+            for(pollfd fd : fds){
+                //dont know If I have to close the clients fd here because I close everyone
+                close(fd.fd);
+            }
+            return err;
+        }
     }
 
     while (true) {
@@ -112,7 +120,8 @@ int main(int argc, char *argv[]) {
             }
             continue;
         }
-
+        
+        //new client
         if (fds[0].revents & POLLIN) {
             int client_fd = accept(server_fd, nullptr, nullptr);
             if (client_fd >= 0) {
