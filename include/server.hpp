@@ -1,5 +1,7 @@
 #pragma once
 
+#include <poll.h>
+#include <vector>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -8,6 +10,7 @@
 #include "ProgramConfig.hpp"
 #include "ServerConfig.hpp"
 #include "ini.h"
+
 
 #define SHUTDOWN -2
 #define CLIENT_DISCONNECT -3
@@ -47,3 +50,4 @@ struct Configs {
 
 int dropPrivileges(const std::string &user);
 int handleCommands(int client_fd, std::string fullCmd, Configs &configs);
+void cleanup(std::vector<pollfd> &fds, Configs &configs);
