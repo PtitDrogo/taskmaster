@@ -11,10 +11,13 @@
 #include <vector>
 
 volatile sig_atomic_t child_exited = 0;
+volatile sig_atomic_t stop_requested = 0;
 
 void sigchld_handler(int) {
     child_exited = 1; // just set a flag, do real work outside the handler
 }
+
+void stop_handler(int) { stop_requested = 1; }
 
 /*
 Exemple:
@@ -45,18 +48,6 @@ static int handler(void *user, const char *section, const char *name, const char
     return err;
 }
 
-void cleanup(std::vector<pollfd> &fds, Configs &configs) {
-    for (auto &pfd : fds)
-        close(pfd.fd);
-    unlink(SOCK_PATH);
-    // Killing all child programs.
-    for (auto &programMap : configs.programs) {
-        for (auto &program : programMap.second.programs) {
-            std::cout << "Killing the program" << program.pid << std::endl;
-            kill(-program.pid, SIGTERM); // askip faudra ptet faire des trucs en plus.
-        }
-    }
-}
 
 void handleDeadProcesses(Configs &configs) {
     int status;
@@ -112,6 +103,13 @@ int main(int argc, char *argv[]) {
     sa.sa_flags = SA_RESTART; // Restart whatever syscall the signal interrupted (Not guaranted)
     sigaction(SIGCHLD, &sa, nullptr);
 
+    // Ctrl C handler
+    struct sigaction st{};
+    st.sa_handler = stop_handler;
+    sigemptyset(&st.sa_mask);
+    sigaction(SIGINT, &st, nullptr);
+    sigaction(SIGTERM, &st, nullptr);
+
     std::cout << "Server listening on " << SOCK_PATH << std::endl;
 
     // pollfd list: index 0 is always the listening socket, rest are clients
@@ -142,6 +140,9 @@ int main(int argc, char *argv[]) {
             }
             ready = 0; // We got interrupted we still do down.
         }
+
+        if (stop_requested)
+            break;
 
         if (child_exited) {
             child_exited = 0;
@@ -180,7 +181,7 @@ int main(int argc, char *argv[]) {
                 fds.erase(fds.begin() + i);
                 continue;
             }
-            
+
             std::string cmd(buf);
             int err = handleCommands(client_fd, cmd, configs);
             if (err == SHUTDOWN) {
