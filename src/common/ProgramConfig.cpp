@@ -25,12 +25,10 @@ void ProgramConfig::printSettings() const {
     }
 }
 
-int ProgramConfig::parseSignals(std::string signal){
-    const std::unordered_map<std::string, int> signals = {
-        {"HUP", SIGHUP},   {"INT", SIGINT},   {"QUIT", SIGQUIT},
-        {"KILL", SIGKILL}, {"TERM", SIGTERM}, {"USR1", SIGUSR1},
-        {"USR2", SIGUSR2}
-    };
+int ProgramConfig::parseSignals(std::string signal) {
+    const std::unordered_map<std::string, int> signals = {{"HUP", SIGHUP},   {"INT", SIGINT},   {"QUIT", SIGQUIT},
+                                                          {"KILL", SIGKILL}, {"TERM", SIGTERM}, {"USR1", SIGUSR1},
+                                                          {"USR2", SIGUSR2}};
 
     auto it = signals.find(signal);
     if (it == signals.end())
@@ -38,50 +36,47 @@ int ProgramConfig::parseSignals(std::string signal){
     return it->second;
 }
 
-static std::string stripQuotes(const std::string &s){
-    if(s.size() >= 2 &&
-       ((s.front() == '"' && s.back() == '"') ||
-        (s.front() == '\'' && s.back() == '\''))){
+static std::string stripQuotes(const std::string &s) {
+    if (s.size() >= 2 && ((s.front() == '"' && s.back() == '"') || (s.front() == '\'' && s.back() == '\''))) {
         return s.substr(1, s.size() - 2);
     }
     return s;
 }
 
-static bool isValidEnvName(const std::string &name){
-    if(name.empty())
+static bool isValidEnvName(const std::string &name) {
+    if (name.empty())
         return false;
-    for(char c : name)
-        if(!std::isalnum(static_cast<unsigned char>(c)) && c != '_')
+    for (char c : name)
+        if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_')
             return false;
     return true;
 }
 
-int ProgramConfig::addEnvironnement(std::string value){
+int ProgramConfig::addEnvironnement(std::string value) {
     std::string name = "";
     std::string val = "";
-    
-    while(true){
+
+    while (true) {
         const std::size_t pos = value.find("=");
-        if(pos == std::string::npos)
+        if (pos == std::string::npos)
             break;
         name = value.substr(0, pos);
 
         const std::size_t pos1 = value.find_first_of(",");
-        if(pos > pos1){
+        if (pos > pos1) {
             return 1;
         }
-        if(pos1 != std::string::npos){
+        if (pos1 != std::string::npos) {
             val = value.substr(pos + 1, pos1 - pos - 1);
             val = stripQuotes(val);
-            if(!isValidEnvName(val))
+            if (!isValidEnvName(val))
                 return -1;
             this->env[name] = val;
             value = value.substr(pos1 + 1, value.length() - 1 - pos1);
-        }
-        else{
+        } else {
             val = value.substr(pos + 1, value.length() - pos);
             val = stripQuotes(val);
-            if(!isValidEnvName(val))
+            if (!isValidEnvName(val))
                 return -1;
             this->env[name] = val;
             return 0;
@@ -127,19 +122,18 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             exitcodes.push_back(std::stoi(value));
         } else if (setting == "startsecs") {
             startsecs = std::stoi(value);
-        }else if (setting == "stopsignal"){
+        } else if (setting == "stopsignal") {
             int signal = parseSignals(value);
-            if(signal != -1){
+            if (signal != -1) {
                 stopsignal = signal;
             }
-        }else if (setting == "environment"){
+        } else if (setting == "environment") {
             int err = addEnvironnement(value);
-            if(err){
+            if (err) {
                 std::cerr << "Unknown setting: " << setting << " in [" << name << "]\n";
                 return 0;
             }
-        }
-        else {
+        } else {
             std::cerr << "Unknown setting: " << setting << " in [" << name << "]\n";
             return 0;
         }
@@ -210,7 +204,7 @@ void ProgramConfig::tick(program &p, time_t now) {
     case State::Starting:
         if (now - p.start_time >= startsecs) { // survived long enough
             p.state = State::Running;
-            p.currRetries = 0;
+            p.curr_retries = 0;
         }
         break;
     case State::Backoff:
@@ -227,21 +221,26 @@ void ProgramConfig::tick(program &p, time_t now) {
 }
 
 void ProgramConfig::onExit(program &p, int status) {
+    std::cout << "Program with PID" << p.pid << "Just ended" << std::endl;
     // we Asked for it
     if (p.killing) {
         p.state = State::Stopped;
         p.killing = false;
+        if (p.restarting) { 
+            p.restarting = false;
+            startProgram(p); 
+        }
         return;
     }
     time_t now = time(nullptr);
     bool diedTooEarly = p.state == State::Starting && now - p.start_time < startsecs;
     if (diedTooEarly) {
         // died too early: failed start
-        if (++p.currRetries > startretries) {
+        if (++p.curr_retries > startretries) {
             p.state = State::Fatal;
         } else {
             p.state = State::Backoff;
-            int delay = p.currRetries * 2;
+            int delay = p.curr_retries * 2;
             p.backoff_until = now + delay;
         }
         return;

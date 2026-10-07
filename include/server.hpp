@@ -11,6 +11,7 @@
 
 #define SHUTDOWN -2
 #define CLIENT_DISCONNECT -3
+#define ABORTED -4
 
 struct Configs {
     ServerConfig server;
@@ -34,6 +35,13 @@ struct Configs {
             }
         }
         return {nullptr, nullptr};
+    }
+
+    void forgetClient(int fd) {
+        for (auto &[name, cfg] : programs)
+            for (auto &p : cfg.programs)
+                if (p.waiting_client == fd)
+                    p.waiting_client = -1;
     }
 };
 

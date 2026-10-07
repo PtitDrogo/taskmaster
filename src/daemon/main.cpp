@@ -1,5 +1,6 @@
 #include "ServerConfig.hpp"
 #include "server.hpp"
+#include "utils.hpp"
 #include <csignal>
 #include <cstring>
 #include <poll.h>
@@ -36,8 +37,7 @@ static int handler(void *user, const char *section, const char *name, const char
         std::string progname = sect.substr(8); // strip "program:"
         ProgramConfig &pc = cfg->programs[progname];
         err = pc.parseSetting(setting, val);
-    }
-    else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
+    } else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
         err = cfg->server.parseSetting(setting, val);
     } else if (sect.rfind("rpcinterface:", 0) == 0) {
         // Idk what that is I dont think we need to handle that
@@ -58,6 +58,29 @@ void cleanup(std::vector<pollfd> &fds, Configs &configs) {
     }
 }
 
+void handleDeadProcesses(Configs &configs) {
+    int status;
+    pid_t pid;
+
+    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+        auto [cfg, p] = configs.findByPid(pid);
+        if (!p)
+            continue;
+        cfg->onExit(*p, status);
+
+        int fd = p->waiting_client;
+        if (fd != -1) {
+            p->waiting_client = -1;
+            bool othersPending = false;
+            // we only send a reply once all the processes of a config are dead.
+            for (auto &q : cfg->programs)
+                if (q.waiting_client == fd)
+                    othersPending = true;
+            if (!othersPending)
+                reply(fd, p->state == State::Starting ? "restarted\n" : "stopped\n");
+        }
+    }
+}
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -122,21 +145,7 @@ int main(int argc, char *argv[]) {
 
         if (child_exited) {
             child_exited = 0;
-            int status;
-            pid_t pid;
-
-            while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-                auto [cfg, p] = configs.findByPid(pid);
-                if (!p)
-                    continue;
-                std::cout << "Program with PID" << pid << "Just ended" << std::endl;
-                cfg->onExit(*p, status);
-
-                if (p->state == State::Stopped && p->waiting_client != -1) {
-                    write(p->waiting_client, "stopped\n", 8);
-                    p->waiting_client = -1;
-                }
-            }
+            handleDeadProcesses(configs);
         }
 
         time_t now = time(nullptr);
@@ -166,11 +175,12 @@ int main(int argc, char *argv[]) {
 
             if (n <= 0) {
                 std::cout << "Client disconnected (fd=" << client_fd << ")\n";
+                configs.forgetClient(client_fd);
                 close(client_fd);
                 fds.erase(fds.begin() + i);
                 continue;
             }
-
+            
             std::string cmd(buf);
             int err = handleCommands(client_fd, cmd, configs);
             if (err == SHUTDOWN) {
@@ -178,6 +188,7 @@ int main(int argc, char *argv[]) {
                 return 0;
             } else if (err == CLIENT_DISCONNECT) {
                 std::cout << "Client disconnected (fd=" << client_fd << ")\n";
+                configs.forgetClient(client_fd);
                 close(client_fd);
                 fds.erase(fds.begin() + i);
             }
