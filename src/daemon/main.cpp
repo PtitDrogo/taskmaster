@@ -12,12 +12,11 @@
 
 volatile sig_atomic_t child_exited = 0;
 volatile sig_atomic_t stop_requested = 0;
+volatile sig_atomic_t reload_requested = 0;
 
-void sigchld_handler(int) {
-    child_exited = 1; // just set a flag, do real work outside the handler
-}
-
+void sigchld_handler(int) { child_exited = 1; }
 void stop_handler(int) { stop_requested = 1; }
+void reload_handler(int) { reload_requested = 1; }
 
 /*
 Exemple:
@@ -32,13 +31,14 @@ value = "python app.py"
 
 */
 
-static int handler(void *user, const char *section, const char *name, const char *value) {
+int handler(void *user, const char *section, const char *name, const char *value) {
     auto *cfg = static_cast<Configs *>(user);
     std::string sect(section), setting(name), val(value);
     int err = 1;
     if (sect.rfind("program:", 0) == 0) {
         std::string progname = sect.substr(8); // strip "program:"
         ProgramConfig &pc = cfg->programs[progname];
+        pc.setName(progname);
         err = pc.parseSetting(setting, val);
     } else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
         err = cfg->server.parseSetting(setting, val);
@@ -47,7 +47,6 @@ static int handler(void *user, const char *section, const char *name, const char
     }
     return err;
 }
-
 
 void handleDeadProcesses(Configs &configs) {
     int status;
@@ -79,6 +78,7 @@ int main(int argc, char *argv[]) {
     }
     Configs configs;
 
+    configs.setConfigPath(argv[1]);
     int result = ini_parse(argv[1], handler, &configs);
     if (result < 0) {
         std::cerr << "Could not open config file\n";
@@ -87,7 +87,6 @@ int main(int argc, char *argv[]) {
         std::cerr << "Parse error on line " << result << "\n";
         return 1;
     }
-
     std::cout << "I am the Daemon/Server !" << std::endl;
     configs.printSettings();
 
@@ -109,6 +108,11 @@ int main(int argc, char *argv[]) {
     sigemptyset(&st.sa_mask);
     sigaction(SIGINT, &st, nullptr);
     sigaction(SIGTERM, &st, nullptr);
+
+    struct sigaction sh{};
+    sh.sa_handler = reload_handler;
+    sigemptyset(&sh.sa_mask);
+    sigaction(SIGHUP, &sh, nullptr);
 
     std::cout << "Server listening on " << SOCK_PATH << std::endl;
 

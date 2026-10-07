@@ -43,6 +43,8 @@ struct ProgramConfig {
     std::string workingdir;
     mode_t umask = 022; // Octal value, this is about setting the files perimission this program will create.
 
+    bool m_exiled_program = false; // mtg reference, stronger than destroy, since it wont show in logs.
+
   public:
     std::vector<program> programs;
     ProgramConfig(/* args */);
@@ -59,4 +61,7 @@ struct ProgramConfig {
     void onExit(program &p, int status);
     int parseSignals(std::string signal);
     int addEnvironnement(std::string value);
+    void setName(std::string newName) { name = newName; }
+    void setProgramToExile() { m_exiled_program = true; }
+    bool shouldBeIgnoredByStatus() const { return m_exiled_program; }
 };

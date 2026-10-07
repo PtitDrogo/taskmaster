@@ -131,6 +131,9 @@ void handleStatusCmd(int client_fd, const Configs &configs) {
 
     for (const auto &[name, cfg] : configs.programs) {
         int i = 0;
+        if (cfg.shouldBeIgnoredByStatus()) {
+            continue;
+        }
         for (const auto &p : cfg.programs) {
             out += name + ":" + std::to_string(i++) + "  " + stateToString(p.state);
             if (p.state == State::Running || p.state == State::Starting || p.state == State::Stopping) {
@@ -177,6 +180,9 @@ int handleCommands(int client_fd, std::string fullCmd, Configs &configs) {
             return 1;
         }
         handleRestart(client_fd, configs, arg);
+    } else if (cmd == "reload") {
+        std::cout << "Properly received the Reload request !\n" << std::endl;
+        handleReload(client_fd, configs);
     } else {
         reply(client_fd, "ERROR unknown command\n");
     }
