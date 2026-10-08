@@ -187,8 +187,16 @@ int ProgramConfig::openLog(const std::string &path) {
     return open(p, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
 }
 
+int ProgramConfig::startAllPrograms() {
+    for (int i = 0; i < numprocs; ++i) {
+        programs.emplace_back();
+        startProgram(programs.back());
+    }
+    return 1;
+}
+
 // we gotta just call /bin/sh on everything
-int ProgramConfig::startProgram(program &p) {
+void ProgramConfig::startProgram(program &p) {
     
     //handle error opening stdout and stderr in parent
     // int out = ProgramConfig::openLog(this->stdout_logfile);

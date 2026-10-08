@@ -157,7 +157,6 @@ int main(int argc, char *argv[]) {
 
         if (ready == 0)
             continue;
-        }
         
         //new client
         if (fds[0].revents & POLLIN) {
@@ -198,6 +197,7 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+
     cleanup(fds, configs);
     return 0;
 }
