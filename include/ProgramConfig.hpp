@@ -10,6 +10,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
+#include <regex>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 enum class State { Stopped, Starting, Running, Backoff, Stopping, Exited, Fatal };
 

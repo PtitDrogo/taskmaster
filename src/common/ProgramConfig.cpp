@@ -202,12 +202,22 @@ int ProgramConfig::openRedirection() {
     return 0;
 }
 
+void clearAutoChildLogDir(const std::string &dir, const std::string &identifier) {
+    std::regex re(".+?---" + identifier + "-\\S+\\.log\\.?\\d{0,4}");
+    std::error_code ec;
+    for (const auto &entry : fs::directory_iterator(dir, ec)) {
+        const std::string fname = entry.path().filename().string();
+        if (std::regex_match(fname, re))
+            fs::remove(entry.path(), ec);   // ignore errors, like supervisor
+    }
+}
+
 int ProgramConfig::generateRandomFile(const std::string &logfile) {
-    std::cout << "the name is " << this->name << std::endl;
-    std::string path = "/tmp/" + logfile + "---supervisor-XXXXXX.log";
+    std::string path = "/tmp/" + this->name + "-" + logfile + "---supervisor-XXXXXX.log";
     std::vector<char> buf(path.begin(), path.end());
     buf.push_back('\0');
-
+    
+    std::cout << "the path is " << buf.data() << std::endl;
     int fd = mkstemps(buf.data(), 4);
     if (fd < 0)
         return -1;
@@ -322,7 +332,7 @@ void ProgramConfig::onExit(program &p, int status) {
         p.killing = false;
         if (p.restarting) { 
             p.restarting = false;
-            startProgram(p); 
+            startProgram(p, 0); 
         }
         return;
     }
