@@ -1,3 +1,4 @@
+#include "utils.hpp"
 #include <server.hpp>
 
 static bool anyStopping(Configs &configs) {
@@ -30,8 +31,10 @@ static void killAllPrograms(Configs &configs) {
 }
 
 void cleanup(std::vector<pollfd> &fds, Configs &configs) {
-    for (auto &pfd : fds)
+    for (auto &pfd : fds) {
+        reply(pfd.fd, "Server is shutting down\n");
         close(pfd.fd);
+    }
     unlink(SOCK_PATH);
     killAllPrograms(configs);
 }

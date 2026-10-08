@@ -18,6 +18,7 @@ SRCS_DAEMON	=	$(SRCS_DIR)/daemon/main.cpp \
 				$(SRCS_DIR)/daemon/ServerConfig.cpp \
 				$(SRCS_DIR)/daemon/dropPrivileges.cpp \
 				$(SRCS_DIR)/daemon/cleanup.cpp \
+				$(SRCS_DIR)/daemon/reload.cpp \
 				$(SRCS_DIR)/daemon/commands.cpp 
 
 SRCS_CLIENT	=	$(SRCS_DIR)/client/main.cpp \

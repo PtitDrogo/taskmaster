@@ -20,7 +20,7 @@ struct program {
     time_t backoff_until = 0;
     bool killing = false; // a stop was requested
     time_t kill_deadline = 0;
-    int waiting_client = -1;
+    int waiting_client = -1; // Technically this should be a vector of clients.
     bool restarting = false;
 };
 
@@ -43,10 +43,11 @@ struct ProgramConfig {
     std::string workingdir;
     mode_t umask = 022; // Octal value, this is about setting the files perimission this program will create.
 
+    // runtime
+    bool m_exiled_program = false; // mtg reference, stronger than destroy, since it wont show in logs.
+
   public:
     std::vector<program> programs;
-    ProgramConfig(/* args */);
-    ~ProgramConfig();
 
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
@@ -59,4 +60,12 @@ struct ProgramConfig {
     void onExit(program &p, int status);
     int parseSignals(std::string signal);
     int addEnvironnement(std::string value);
+    void setName(std::string newName) { name = newName; }
+    std::string getName() { return name; }
+    void setProgramToExile() { m_exiled_program = true; }
+    bool isExiled() const { return m_exiled_program; }
+    bool getAutoStart() const { return autostart; }
+
+    static bool areSettingsEqual(const ProgramConfig &a, const ProgramConfig &b);
+    static void copySettings(const ProgramConfig &src, ProgramConfig &dest);
 };

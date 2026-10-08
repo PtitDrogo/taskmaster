@@ -2,7 +2,7 @@
 #include "utils.hpp"
 #include <sstream>
 
-int handleShutdown(int client_fd) {
+static int handleShutdown(int client_fd) {
     reply(client_fd, "Really shut the remote supervisord process down y/N?\n");
 
     char buf[256] = {0};
@@ -125,12 +125,15 @@ static const char *stateToString(State s) {
     return "UNKNOWN";
 }
 
-void handleStatusCmd(int client_fd, const Configs &configs) {
+static void handleStatusCmd(int client_fd, const Configs &configs) {
     std::string out;
     time_t now = time(nullptr);
 
     for (const auto &[name, cfg] : configs.programs) {
         int i = 0;
+        if (cfg.isExiled()) {
+            continue;
+        }
         for (const auto &p : cfg.programs) {
             out += name + ":" + std::to_string(i++) + "  " + stateToString(p.state);
             if (p.state == State::Running || p.state == State::Starting || p.state == State::Stopping) {
@@ -177,6 +180,9 @@ int handleCommands(int client_fd, std::string fullCmd, Configs &configs) {
             return 1;
         }
         handleRestart(client_fd, configs, arg);
+    } else if (cmd == "reload") {
+        std::cout << "Properly received the Reload request !\n" << std::endl;
+        handleReload(client_fd, configs);
     } else {
         reply(client_fd, "ERROR unknown command\n");
     }
