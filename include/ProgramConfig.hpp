@@ -4,12 +4,12 @@
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
+#include <fcntl.h>
 #include <iostream>
 #include <map>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
-#include <fcntl.h>
 
 enum class State { Stopped, Starting, Running, Backoff, Stopping, Exited, Fatal };
 
@@ -45,24 +45,32 @@ class ProgramConfig {
     std::vector<char *> envptr;
     std::string workingdir;
     mode_t umask = 022; // Octal value, this is about setting the files perimission this program will create.
+    int fdout = 0;
+    int fderr = 0;
 
   public:
     std::vector<program> programs;
     ProgramConfig(/* args */);
     ~ProgramConfig();
-    static int openLog(const std::string &path);
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
     bool requestStop(program &p, int client_fd);
     bool shouldAutostart() const { return autostart; }
-    void startProgram(program &p);
+    void startProgram(program &p, int i);
     int startAllPrograms();
-
+	
     void tick(program &p, time_t now);
     void onExit(program &p, int status);
     int parseSignals(std::string signal);
-    int addEnvironnement(const std::string &value);
-    void fillEnvp();
-    void redirectFiles(int fd_out, int fd_err);
+    
+	//environment
+	int addEnvironnement(const std::string &value);
+    void fillEnvp(int i);
     char **getEnvp();
+
+	//redirection
+    int openLog(const std::string &path, const std::string &logfile);
+    void redirectFiles();
+    int openRedirection();
+	int generateRandomFile(const std::string &logfile);
 };

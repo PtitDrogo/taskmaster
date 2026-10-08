@@ -22,7 +22,7 @@ void ProgramConfig::printSettings() const {
 
     if (!env.empty()) {
         std::cout << "  env:\n";
-        for (auto &v: env)
+        for (auto &v : env)
             std::cout << "\t" << v << "\n";
     }
 }
@@ -38,47 +38,42 @@ int ProgramConfig::parseSignals(std::string signal) {
     return it->second;
 }
 
-namespace{
-    std::string stripQuotes(const std::string &s){
-        if(s.size() >= 2 &&
-           ((s.front() == '"' && s.back() == '"') ||
-            (s.front() == '\'' && s.back() == '\''))){
-            return s.substr(1, s.size() - 2);
-        }
-        return s;
+namespace {
+std::string stripQuotes(const std::string &s) {
+    if (s.size() >= 2 && ((s.front() == '"' && s.back() == '"') || (s.front() == '\'' && s.back() == '\''))) {
+        return s.substr(1, s.size() - 2);
     }
-    
-    bool isValidEnvName(const std::string &name){
-        if(name.empty())
-            return false;
-        for(char c : name)
-            if(!std::isalnum(static_cast<unsigned char>(c)) && c != '_')
-                return false;
-        return true;
-    }
+    return s;
 }
 
-int ProgramConfig::addEnvironnement(const std::string &value)
-{
+bool isValidEnvName(const std::string &name) {
+    if (name.empty())
+        return false;
+    for (char c : name)
+        if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_')
+            return false;
+    return true;
+}
+} // namespace
+
+int ProgramConfig::addEnvironnement(const std::string &value) {
     std::size_t start = 0;
 
-    while (start < value.size())
-    {
+    while (start < value.size()) {
         const std::size_t eq = value.find('=', start);
         if (eq == std::string::npos)
             return 1;
 
         bool inQuotes = false;
         std::size_t end = eq + 1;
-        while (end < value.size() && (inQuotes || value[end] != ','))
-        {
+        while (end < value.size() && (inQuotes || value[end] != ',')) {
             if (value[end] == '"')
                 inQuotes = !inQuotes;
             end++;
         }
 
         const std::string name = value.substr(start, eq - start);
-        const std::string val  = stripQuotes(value.substr(eq + 1, end - eq - 1));
+        const std::string val = stripQuotes(value.substr(eq + 1, end - eq - 1));
 
         if (!isValidEnvName(name))
             return -1;
@@ -89,21 +84,23 @@ int ProgramConfig::addEnvironnement(const std::string &value)
     return 0;
 }
 
-void ProgramConfig::fillEnvp()
-{
+void ProgramConfig::fillEnvp(int i) {
     this->env.clear();
     this->envptr.clear();
 
-    this->env.reserve(this->envMap.size());
+    this->env.reserve(this->envMap.size() + 1);
     for (const auto &pair : this->envMap)
         this->env.push_back(pair.first + "=" + pair.second);
+    this->env.push_back("number=" + std::to_string(i));
 
-    // Pass 2: the vector is now final, so the pointers stay valid.
     this->envptr.reserve(this->env.size() + 1);
-    for (auto &s : this->env)                    // non-const ref -> data() gives char *
-        this->envptr.push_back(s.data());        // C++17; otherwise &s[0]
+    for (auto &s : this->env)
+        this->envptr.push_back(s.data());
+
     this->envptr.push_back(nullptr);
 }
+
+char **ProgramConfig::getEnvp() { return this->envptr.data(); }
 
 int ProgramConfig::parseSetting(const std::string &setting, const std::string &value) {
     try {
@@ -127,7 +124,6 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             discard_stderr = (value == "true");
         } else if (setting == "stdout_logfile") {
             stdout_logfile = value;
-            std::cout << "output " << stdout_logfile << std::endl;
         } else if (setting == "stderr_logfile") {
             stderr_logfile = value;
         } else if (setting == "umask") {
@@ -166,59 +162,91 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
     return 1;
 }
 
-void ProgramConfig::redirectFiles(int fd_out, int fd_err){
+void ProgramConfig::redirectFiles() {
     int devnull = open("/dev/null", O_RDONLY);
-    dup2(devnull, STDIN_FILENO);
+    if (dup2(devnull, STDIN_FILENO) < 0) {
+        perror("dup2");
+        exit(1);
+    }
     close(devnull);
 
-    dup2(fd_out, STDOUT_FILENO);
-    close (fd_out);
-    dup2(fd_err, STDERR_FILENO);
-    close (fd_err);
+    if (dup2(fdout, STDOUT_FILENO) < 0) {
+        perror("dup2");
+        exit(1);
+    }
+    if (dup2(fderr, STDERR_FILENO) < 0) {
+        perror("dup2");
+        exit(1);
+    }
+
+    close(this->fdout);
+    close(this->fderr);
 }
 
-char **ProgramConfig::getEnvp()
-{
-    return this->envptr.data();
+int ProgramConfig::openRedirection() {
+    int out = openLog(this->stdout_logfile, "stdout");
+    if (out < 0) {
+        int e = errno; // save before any other call
+        std::cerr << "Error: cannot open '" << this->stdout_logfile << "' in section '" << this->name
+                  << "': " << strerror(e) << "\n";
+        return e;
+    }
+
+    int err = openLog(this->stderr_logfile, "stderr");
+    if (err < 0) {
+        int e = errno;
+        std::cerr << "Error: cannot open '" << this->stderr_logfile << "' in section '" << this->name
+                  << "': " << strerror(e) << "\n";
+        close(out);
+        return e;
+    }
+
+    this->fdout = out;
+    this->fderr = err;
+    return 0;
 }
 
-int ProgramConfig::openLog(const std::string &path) {
+int ProgramConfig::generateRandomFile(const std::string &logfile) {
+    std::cout << "the name is " << this->name << std::endl;
+    std::string path = "/tmp/" + logfile + "---supervisor-XXXXXX.log";
+    std::vector<char> buf(path.begin(), path.end());
+    buf.push_back('\0');
+
+    int fd = mkstemps(buf.data(), 4);
+    if (fd < 0)
+        return -1;
+
+    if (logfile == "stdout")
+        this->stdout_logfile = buf.data();
+    else
+        this->stderr_logfile = buf.data();
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
+    return fd;
+}
+
+int ProgramConfig::openLog(const std::string &path, const std::string &logfile) {
+    if (path == "AUTO")
+        return this->generateRandomFile(logfile);
+
     const char *p = path.empty() ? "/dev/null" : path.c_str();
     return open(p, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
 }
 
 int ProgramConfig::startAllPrograms() {
+    this->openRedirection();
     for (int i = 0; i < numprocs; ++i) {
         programs.emplace_back();
-        startProgram(programs.back());
+        this->startProgram(programs.back(), i);
     }
     return 1;
 }
 
 // we gotta just call /bin/sh on everything
-void ProgramConfig::startProgram(program &p) {
-    
-    //handle error opening stdout and stderr in parent
-    // int out = ProgramConfig::openLog(this->stdout_logfile);
-    // if (out < 0) {
-    //     std::cout << "Error: The directory named as part of the path " 
-    //         << this->stdout_logfile << "does not exist in section '" << 
-    //         this->name << "' (file: '" << "./myconfigfile.conf" << "')\n";
-    //     return errno;
-    // }
-    // int err = ProgramConfig::openLog(this->stderr_logfile);
-    // if (err < 0) {
-    //     std::cout << "Error: The directory named as part of the path " 
-    //         << this->stdout_logfile << "does not exist in section '" << 
-    //         this->name << "' (file: '" << "./myconfigfile.conf" << "')\n";
-    //     close(out);
-    //     return errno;
-    // }
+void ProgramConfig::startProgram(program &p, int i) {
+    // Fill the env variables into envptr that point to a char*
+    this->fillEnvp(i);
 
-    //Fill the env variables into envptr that point to a char* 
-    this->fillEnvp();
-
-    //fork
+    // fork
     pid_t pid = fork();
 
     if (pid < 0) {
@@ -229,19 +257,19 @@ void ProgramConfig::startProgram(program &p) {
     if (pid == 0) {
         setpgid(0, 0); // L'enfant se fou dans son groupe 0
         // Execve takes in char* and not const char*, so we have to do this.
-        char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char*)this->cmd.data(), nullptr};
-        char ** envp = this->getEnvp();
+        char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)this->cmd.data(), nullptr};
+        char **envp = this->getEnvp();
 
-        //redirecting to files
-        // this->redirectFiles(out, err);
+        // redirecting to files
+        this->redirectFiles();
 
         execve("/bin/sh", argv, envp);
 
         perror("execve failed");
         _exit(127); // use _exit, not exit, in a failed post-fork child
     } else {
-        // close(out);
-        // close(err);
+        // close(this->fdout);
+        // close(this->fderr);
         setpgid(pid, pid); // Le parent fout l'enfant dans le groupe de son PID
                            // On fait les deux pour une histoire de race condition.
 
@@ -279,7 +307,7 @@ void ProgramConfig::tick(program &p, time_t now) {
         break;
     case State::Backoff:
         if (now >= p.backoff_until)
-            startProgram(p); // retry
+            startProgram(p, 0); // retry
         break;
     case State::Stopping:
         if (now > p.kill_deadline)
@@ -296,9 +324,9 @@ void ProgramConfig::onExit(program &p, int status) {
     if (p.killing) {
         p.state = State::Stopped;
         p.killing = false;
-        if (p.restarting) { 
+        if (p.restarting) {
             p.restarting = false;
-            startProgram(p); 
+            startProgram(p, 0);
         }
         return;
     }
@@ -319,5 +347,5 @@ void ProgramConfig::onExit(program &p, int status) {
     bool returnCodeIsInList = std::find(exitcodes.begin(), exitcodes.end(), WEXITSTATUS(status)) != exitcodes.end();
     bool diedNormally = WIFEXITED(status) && returnCodeIsInList;
     if (autorestart == AutoRestart::Always || (autorestart == AutoRestart::Unexpected && !diedNormally))
-        startProgram(p);
+        startProgram(p, 0);
 }

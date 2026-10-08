@@ -44,7 +44,7 @@ static void handleStart(int client_fd, Configs &configs, const std::string &name
     for (auto &p : cfg->programs) {
         if (p.state == State::Stopped || p.state == State::Exited || p.state == State::Fatal) {
             p.curr_retries = 0; // manual start = fresh retry budget
-            cfg->startProgram(p);
+            cfg->startProgram(p, 0);
             ++started;
         }
     }
@@ -97,7 +97,7 @@ static void handleRestart(int client_fd, Configs &configs, const std::string &na
             should_wait = true;
         } else if (p.state != State::Stopping) { // Stopped, Exited, Fatal, Backoff
             p.curr_retries = 0;
-            cfg->startProgram(p); // nothing to wait for, start right away
+            cfg->startProgram(p, 0); // nothing to wait for, start right away
         }
     }
     if (!should_wait)

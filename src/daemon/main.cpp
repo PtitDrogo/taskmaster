@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "I am the Daemon/Server !" << std::endl;
-    configs.printSettings();
+    // configs.printSettings();
 
     int server_fd = ServerConfig::startDaemonServer();
     if (server_fd == -1)
