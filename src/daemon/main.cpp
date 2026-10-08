@@ -152,6 +152,10 @@ int main(int argc, char *argv[]) {
         if (stop_requested)
             break;
 
+        if (reload_requested) {
+            handleReload(-1, configs);
+        }
+
         if (child_exited) {
             child_exited = 0;
             handleDeadProcesses(configs);

@@ -2,7 +2,7 @@
 #include "utils.hpp"
 #include <sstream>
 
-int handleShutdown(int client_fd) {
+static int handleShutdown(int client_fd) {
     reply(client_fd, "Really shut the remote supervisord process down y/N?\n");
 
     char buf[256] = {0};
@@ -125,7 +125,7 @@ static const char *stateToString(State s) {
     return "UNKNOWN";
 }
 
-void handleStatusCmd(int client_fd, const Configs &configs) {
+static void handleStatusCmd(int client_fd, const Configs &configs) {
     std::string out;
     time_t now = time(nullptr);
 
