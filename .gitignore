@@ -78,3 +78,6 @@ Thumbs.db
 ft_traceroute
 taskmaster.excalidraw
 venv/
+
+taskmasterd
+taskmasterctl

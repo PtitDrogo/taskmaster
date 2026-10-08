@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
@@ -10,9 +11,18 @@
 #include <vector>
 #include <fcntl.h>
 
+enum class State { Stopped, Starting, Running, Backoff, Stopping, Exited, Fatal };
+
 struct program {
-    pid_t pid;
-    std::string status; // Probably en enum later on.
+    pid_t pid = -1;
+    State state = State::Starting;
+    time_t start_time = 0;
+    int curr_retries = 0; // failed starts in a row
+    time_t backoff_until = 0;
+    bool killing = false; // a stop was requested
+    time_t kill_deadline = 0;
+    int waiting_client = -1;
+    bool restarting = false;
 };
 
 // This hold the config of every created program.
@@ -25,7 +35,6 @@ class ProgramConfig {
     int startsecs = 1;
     enum class AutoRestart { Always, Never, Unexpected } autorestart = AutoRestart::Unexpected;
     std::vector<int> exitcodes = {0};
-    int starttime = 1;
     int startretries = 3;
     int stopsignal = SIGINT;
     int stoptime = 10;
@@ -44,8 +53,13 @@ class ProgramConfig {
     static int openLog(const std::string &path);
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
-    int createProgram();
-    int startAllPrograms(const std::map<std::string, ProgramConfig> &programs);
+    bool requestStop(program &p, int client_fd);
+    bool shouldAutostart() const { return autostart; }
+    void startProgram(program &p);
+    int startAllPrograms();
+
+    void tick(program &p, time_t now);
+    void onExit(program &p, int status);
     int parseSignals(std::string signal);
     int addEnvironnement(const std::string &value);
     void fillEnvp();

@@ -1,5 +1,6 @@
 #include "ServerConfig.hpp"
 #include "server.hpp"
+#include "utils.hpp"
 #include <csignal>
 #include <cstring>
 #include <poll.h>
@@ -10,11 +11,14 @@
 #include <vector>
 
 volatile sig_atomic_t child_exited = 0;
+volatile sig_atomic_t stop_requested = 0;
 
 void sigchld_handler(int) {
     child_exited = 1; // just set a flag, do real work outside the handler
     std::cout << "signal handler\n";
 }
+
+void stop_handler(int) { stop_requested = 1; }
 
 /*
 Exemple:
@@ -37,13 +41,37 @@ static int handler(void *user, const char *section, const char *name, const char
         std::string progname = sect.substr(8); // strip "program:"
         ProgramConfig &pc = cfg->programs[progname];
         err = pc.parseSetting(setting, val);
-    }
-    else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
+    } else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
         err = cfg->server.parseSetting(setting, val);
     } else if (sect.rfind("rpcinterface:", 0) == 0) {
         // Idk what that is I dont think we need to handle that
     }
     return err;
+}
+
+
+void handleDeadProcesses(Configs &configs) {
+    int status;
+    pid_t pid;
+
+    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+        auto [cfg, p] = configs.findByPid(pid);
+        if (!p)
+            continue;
+        cfg->onExit(*p, status);
+
+        int fd = p->waiting_client;
+        if (fd != -1) {
+            p->waiting_client = -1;
+            bool othersPending = false;
+            // we only send a reply once all the processes of a config are dead.
+            for (auto &q : cfg->programs)
+                if (q.waiting_client == fd)
+                    othersPending = true;
+            if (!othersPending)
+                reply(fd, p->state == State::Starting ? "restarted\n" : "stopped\n");
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -69,11 +97,19 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
 
     // signal to know whats going on with children
+    // When a child dies, the kernel sends SIGCHLD to its parent.
     struct sigaction sa{};
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART; // Restart whatever syscall the signal interrupted (Not guaranted)
     sigaction(SIGCHLD, &sa, nullptr);
+
+    // Ctrl C handler
+    struct sigaction st{};
+    st.sa_handler = stop_handler;
+    sigemptyset(&st.sa_mask);
+    sigaction(SIGINT, &st, nullptr);
+    sigaction(SIGTERM, &st, nullptr);
 
     std::cout << "Server listening on " << SOCK_PATH << std::endl;
 
@@ -87,37 +123,39 @@ int main(int argc, char *argv[]) {
         // Dont hardcode this before sending it :)
     }
 
-    // Launch programs (this is fucked and will have to be changed to another class/function or smth);
-    if (!configs.programs.empty()) {
-        int err = configs.startAllPrograms();
-        if(err){
-            for(pollfd fd : fds){
-                //dont know If I have to close the clients fd here because I close everyone
-                close(fd.fd);
+    // Launch All programs of all configs
+    for (auto &[name, cfg] : configs.programs) {
+        if (cfg.shouldAutostart())
+            if (cfg.startAllPrograms() == -1) {
+                cleanup(fds, configs);
+                return EXIT_FAILURE;
             }
-            return err;
-        }
     }
 
     while (true) {
         int ready = poll(fds.data(), fds.size(), 1000);
         if (ready < 0) {
-            if (errno == EINTR)
-                continue; // interrupted by a signal, just retry
-            perror("poll");
-            break;
+            if (errno != EINTR) {
+                perror("poll");
+                break;
+            }
+            ready = 0; // We got interrupted we still do down.
         }
 
-        if (ready == 0) {
-            if (child_exited) {
-                child_exited = 0;
-                int status;
-                pid_t pid;
-                while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-                    std::cout << "Program with PID" << pid << "Just ended" << std::endl;
-                    // find which Program this pid belongs to, update its state
-                }
-            }
+        if (stop_requested)
+            break;
+
+        if (child_exited) {
+            child_exited = 0;
+            handleDeadProcesses(configs);
+        }
+
+        time_t now = time(nullptr);
+        for (auto &[name, cfg] : configs.programs)
+            for (auto &p : cfg.programs)
+                cfg.tick(p, now);
+
+        if (ready == 0)
             continue;
         }
         
@@ -141,19 +179,25 @@ int main(int argc, char *argv[]) {
 
             if (n <= 0) {
                 std::cout << "Client disconnected (fd=" << client_fd << ")\n";
+                configs.forgetClient(client_fd);
                 close(client_fd);
                 fds.erase(fds.begin() + i);
                 continue;
             }
 
             std::string cmd(buf);
-            handleCommands(client_fd, cmd, configs);
+            int err = handleCommands(client_fd, cmd, configs);
+            if (err == SHUTDOWN) {
+                cleanup(fds, configs);
+                return 0;
+            } else if (err == CLIENT_DISCONNECT) {
+                std::cout << "Client disconnected (fd=" << client_fd << ")\n";
+                configs.forgetClient(client_fd);
+                close(client_fd);
+                fds.erase(fds.begin() + i);
+            }
         }
     }
-
-    for (auto &pfd : fds)
-        close(pfd.fd);
-    unlink(SOCK_PATH);
-
+    cleanup(fds, configs);
     return 0;
 }
