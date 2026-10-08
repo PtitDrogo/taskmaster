@@ -21,7 +21,7 @@ struct program {
     time_t backoff_until = 0;
     bool killing = false; // a stop was requested
     time_t kill_deadline = 0;
-    int waiting_client = -1;
+    int waiting_client = -1; // Technically this should be a vector of clients.
     bool restarting = false;
 };
 
@@ -45,13 +45,15 @@ class ProgramConfig {
     std::vector<char *> envptr;
     std::string workingdir;
     mode_t umask = 022; // Octal value, this is about setting the files perimission this program will create.
+    
+    // runtime
+    bool m_exiled_program = false; // mtg reference, stronger than destroy, since it wont show in logs.
     int fdout = 0;
     int fderr = 0;
 
   public:
     std::vector<program> programs;
-    ProgramConfig(/* args */);
-    ~ProgramConfig();
+
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
     bool requestStop(program &p, int client_fd);
@@ -63,7 +65,16 @@ class ProgramConfig {
     void onExit(program &p, int status);
     int parseSignals(std::string signal);
     
-	//environment
+    std::string getName() { return name; }
+    void setName(std::string newName) { name = newName; }
+    void setProgramToExile() { m_exiled_program = true; }
+    bool isExiled() const { return m_exiled_program; }
+    bool getAutoStart() const { return autostart; }
+
+    static bool areSettingsEqual(const ProgramConfig &a, const ProgramConfig &b);
+    static void copySettings(const ProgramConfig &src, ProgramConfig &dest);
+	
+    //environment
 	int addEnvironnement(const std::string &value);
     void fillEnvp(int i);
     char **getEnvp();

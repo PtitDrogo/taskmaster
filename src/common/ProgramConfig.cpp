@@ -1,10 +1,6 @@
 #include "ProgramConfig.hpp"
 #include <unordered_map>
 
-ProgramConfig::ProgramConfig(/* args */) {}
-
-ProgramConfig::~ProgramConfig() {}
-
 void ProgramConfig::printSettings() const {
     std::cout << "Section: " << name << "\n"
               << "  command: " << cmd << "\n"
@@ -324,9 +320,9 @@ void ProgramConfig::onExit(program &p, int status) {
     if (p.killing) {
         p.state = State::Stopped;
         p.killing = false;
-        if (p.restarting) {
+        if (p.restarting) { 
             p.restarting = false;
-            startProgram(p, 0);
+            startProgram(p); 
         }
         return;
     }
@@ -348,4 +344,24 @@ void ProgramConfig::onExit(program &p, int status) {
     bool diedNormally = WIFEXITED(status) && returnCodeIsInList;
     if (autorestart == AutoRestart::Always || (autorestart == AutoRestart::Unexpected && !diedNormally))
         startProgram(p, 0);
+}
+
+// This could be done automatically with c++ 20 and better class organization, oh well !
+// If we add something to ProgramConfig we have to add it here, boooooo
+bool ProgramConfig::areSettingsEqual(const ProgramConfig &a, const ProgramConfig &b) {
+    return std::tie(a.name, a.cmd, a.numprocs, a.autostart, a.startsecs, a.autorestart, a.exitcodes, a.startretries,
+                    a.stopsignal, a.stoptime, a.discard_stdout, a.discard_stderr, a.stdout_logfile, a.stderr_logfile,
+                    a.env, a.workingdir, a.umask) ==
+           std::tie(b.name, b.cmd, b.numprocs, b.autostart, b.startsecs, b.autorestart, b.exitcodes, b.startretries,
+                    b.stopsignal, b.stoptime, b.discard_stdout, b.discard_stderr, b.stdout_logfile, b.stderr_logfile,
+                    b.env, b.workingdir, b.umask);
+}
+
+void ProgramConfig::copySettings(const ProgramConfig &src, ProgramConfig &dest) {
+    std::tie(dest.name, dest.cmd, dest.numprocs, dest.autostart, dest.startsecs, dest.autorestart, dest.exitcodes,
+             dest.startretries, dest.stopsignal, dest.stoptime, dest.discard_stdout, dest.discard_stderr,
+             dest.stdout_logfile, dest.stderr_logfile, dest.env, dest.workingdir, dest.umask) =
+        std::tie(src.name, src.cmd, src.numprocs, src.autostart, src.startsecs, src.autorestart, src.exitcodes,
+                 src.startretries, src.stopsignal, src.stoptime, src.discard_stdout, src.discard_stderr,
+                 src.stdout_logfile, src.stderr_logfile, src.env, src.workingdir, src.umask);
 }
