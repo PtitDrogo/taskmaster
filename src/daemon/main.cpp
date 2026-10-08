@@ -66,8 +66,12 @@ void handleDeadProcesses(Configs &configs) {
             for (auto &q : cfg->programs)
                 if (q.waiting_client == fd)
                     othersPending = true;
-            if (!othersPending)
+            if (!othersPending) {
                 reply(fd, p->state == State::Starting ? "restarted\n" : "stopped\n");
+                if (cfg->isExiled()) {
+                    configs.programs.erase(cfg->getName());
+                }
+            }
         }
     }
 }

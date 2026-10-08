@@ -131,7 +131,7 @@ void handleStatusCmd(int client_fd, const Configs &configs) {
 
     for (const auto &[name, cfg] : configs.programs) {
         int i = 0;
-        if (cfg.shouldBeIgnoredByStatus()) {
+        if (cfg.isExiled()) {
             continue;
         }
         for (const auto &p : cfg.programs) {

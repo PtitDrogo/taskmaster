@@ -14,44 +14,69 @@
 // First we pass the new config and we generate a new Configs object.
 // We set programs in the existing config to be deleted for real.
 static void handleRemovedPrograms(Configs &configs, const Configs &newConfigs) {
-    for (auto &keyValue : configs.programs) {
-        try {
-            ProgramConfig tmp = newConfigs.programs.at(keyValue.first);
-        } catch (const std::out_of_range &e) {
-            ProgramConfig &config = keyValue.second;
-            config.setProgramToExile();
-            for (auto &program : config.programs) {
-                config.requestStop(program, -1);
+    for (auto &[name, config] : configs.programs) {
+        if (newConfigs.programs.count(name))
+            continue;
+        config.setProgramToExile();
+        for (auto &program : config.programs)
+            config.requestStop(program, -1);
+    }
+}
+
+static int handleNewPrograms(Configs &configs, const Configs &newConfigs) {
+
+    for (auto &[name, config] : newConfigs.programs) {
+        if (configs.programs.count(name))
+            continue;
+
+        // We add new programs to configs and then we start them, simple as
+        auto [it, inserted] = configs.programs.emplace(name, config);
+        if (inserted && it->second.shouldAutostart()) {
+            if (it->second.startAllPrograms() == -1) {
+                return -1;
+            }
+        }
+    }
+    return 1;
+}
+static void handleModifiedPrograms(Configs &configs, const Configs &newConfigs) {
+    for (const auto &[name, newConfig] : newConfigs.programs) {
+        auto it = configs.programs.find(name);
+        if (it == configs.programs.end())
+            continue;
+
+        ProgramConfig &oldConfig = it->second;
+        if (ProgramConfig::areSettingsEqual(oldConfig, newConfig))
+            continue;
+
+        ProgramConfig::copySettings(newConfig, oldConfig);
+        for (auto &program : oldConfig.programs) {
+            oldConfig.requestStop(program, -1);
+            if (oldConfig.getAutoStart()) {
+                program.restarting = true;
             }
         }
     }
 }
 
-void handleReload(int client_fd, Configs &configs) {
+int handleReload(int client_fd, Configs &configs) {
     // Read and parse the new config file
-    Configs newConfig;
-    int result = ini_parse(configs.server.getConfigPath().c_str(), handler, &newConfig);
+    Configs newConfigs;
+    int result = ini_parse(configs.server.getConfigPath().c_str(), handler, &newConfigs);
+
     if (result < 0) {
         reply(client_fd, "Could not open config file\n");
-        return;
+        return ABORTED;
     } else if (result > 0) {
         reply(client_fd, "Parse error on line " + std::to_string(result) + "\n");
-        return;
+        return ABORTED;
     }
-    handleRemovedPrograms(configs, newConfig);
+    handleRemovedPrograms(configs, newConfigs);
+    if (handleNewPrograms(configs, newConfigs) == -1) {
+        return SHUTDOWN;
+    }
+    handleModifiedPrograms(configs, newConfigs);
+
     reply(client_fd, "Reloaded config file\n");
-    // Compare before and after
-
-    // Stop non existant processes, they shouldnt even show when typing status
-    // Start the new processes.
-    // Restart modified processes.
-
-    // Maybe its smarter to just flip stuff in Program and let the tick function take care of it.
-
-    // should_reload
-    // should_die_for_real
-
-    // Maybe just the act of starting brand new processes is the thing i should do here ?
-
-    return;
+    return 1;
 }

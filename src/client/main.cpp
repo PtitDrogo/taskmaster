@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
             readResponseAndPrint(fd);
         }
     }
-
+    readResponseAndPrint(fd);
     clear_history(); // This is the clear history for the shell.
     close(fd);
     return 0;
