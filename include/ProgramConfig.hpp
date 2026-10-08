@@ -31,6 +31,7 @@ class ProgramConfig {
     int stoptime = 10;
     bool discard_stdout = false, discard_stderr = false;
     std::string stdout_logfile = "", stderr_logfile = "";
+    std::map<std::string, std::string> envMap;
     std::vector<std::string> env;
     std::vector<char *> envptr;
     std::string workingdir;
@@ -40,12 +41,14 @@ class ProgramConfig {
     std::vector<program> programs;
     ProgramConfig(/* args */);
     ~ProgramConfig();
+    static int openLog(const std::string &path);
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
     int createProgram();
     int startAllPrograms(const std::map<std::string, ProgramConfig> &programs);
     int parseSignals(std::string signal);
-    int addEnvironnement(std::string value);
+    int addEnvironnement(const std::string &value);
+    void fillEnvp();
     void redirectFiles(int fd_out, int fd_err);
-    // char *envp[] fillEnvp();
+    char **getEnvp();
 };
