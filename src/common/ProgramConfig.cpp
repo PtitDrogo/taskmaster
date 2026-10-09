@@ -96,7 +96,7 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             startretries = std::stoi(value);
         } else if (setting == "stoptime") {
             stoptime = std::stoi(value);
-        } else if (setting == "workingdir") {
+        } else if (setting == "directory") {
             workingdir = value;
         } else if (setting == "stdout_discard") {
             discard_stdout = (value == "true");
@@ -160,6 +160,10 @@ void ProgramConfig::startProgram(program &p) {
         return;
     }
     if (pid == 0) {
+        if (!this->workingdir.empty() && chdir(this->workingdir.c_str()) == -1) {
+            perror("chdir failed");
+            _exit(127);
+        }
         setpgid(0, 0); // L'enfant se fou dans son groupe 0
         // Execve takes in char* and not const char*, so we have to do this.
         char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)cmd.c_str(), nullptr};

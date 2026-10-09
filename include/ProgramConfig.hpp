@@ -40,7 +40,7 @@ struct ProgramConfig {
     bool discard_stdout = false, discard_stderr = false;
     std::string stdout_logfile, stderr_logfile;
     std::map<std::string, std::string> env;
-    std::string workingdir;
+    std::string workingdir = "";
     mode_t umask = 022; // Octal value, this is about setting the files perimission this program will create.
 
     // runtime

@@ -24,6 +24,7 @@ SRCS_DAEMON	=	$(SRCS_DIR)/daemon/main.cpp \
 
 SRCS_CLIENT	=	$(SRCS_DIR)/client/main.cpp \
 				$(SRCS_DIR)/client/ClientConfig.cpp \
+				$(SRCS_DIR)/client/autocomplete.cpp \
 				$(SRCS_DIR)/client/input.cpp 
 
 OBJS_COMMON	=	$(patsubst $(SRCS_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(SRCS_COMMON))

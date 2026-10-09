@@ -1,4 +1,5 @@
 #include "client.hpp"
+#include <readline/readline.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -38,6 +39,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
 
     char *line;
+    rl_attempted_completion_function = command_completion;
     while ((line = readline("supervisor> ")) != nullptr) {
         std::string input(line);
         if (!input.empty()) {
@@ -46,10 +48,8 @@ int main(int argc, char *argv[]) {
         free(line);
 
         if (input == "help") {
-            std::cout << "HELP - SHUTDOWN - OTHER STUFF" << std::endl;
-        } else if (input.empty()) {
-            continue;
-        } else {
+            std::cout << HELP_STRING << std::endl;
+        } else if (!input.empty()) {
             reply(fd, input);
             std::cout << "Sending: " << input.c_str() << std::endl;
             readResponseAndPrint(fd);
