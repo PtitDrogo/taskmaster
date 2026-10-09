@@ -1,11 +1,21 @@
+#include <cstdlib>
 #include <curl/curl.h>
+#include <iostream>
 #include <string>
+
+std::string getEnv(const char *name, const std::string &fallback = "") {
+    const char *v = std::getenv(name);
+    return v ? v : fallback;
+}
 
 bool notifyDiscord(const std::string &message) {
     // Escape quotes/backslashes/newlines for JSON
-    std::string webhook_url = "https://discord.com/api/webhooks/1558076376261857280/"
-                              "kIDGJ1A0txp-ZC6_Jq79fiO4nkeSPdsj9n9fJ-UTW_PAkZzTNHttT4__TkYuhcByIW4U";
+    std::string webhook_url = getEnv("DISCORD_WEBHOOK");
     std::string esc;
+    if (webhook_url.empty()) {
+        std::cout << "You didnt't set the discord webhook token" << std::endl;
+        return false;
+    }
     for (char c : message) {
         switch (c) {
         case '"':
