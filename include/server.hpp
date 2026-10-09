@@ -4,9 +4,9 @@
 #include <iostream>
 #include <map>
 #include <poll.h>
+#include <syslog.h>
 #include <unordered_map>
 #include <vector>
-#include <syslog.h>
 
 #include "ProgramConfig.hpp"
 #include "ServerConfig.hpp"

@@ -5,11 +5,8 @@
 
 class ServerConfig {
   private:
-    std::string sockfile; // [unix_http_server]
+    std::string user;
     std::string logfile;
-    std::string pidfile; // [supervisord]
-    bool nodaemon = false;
-    std::string serverurl; // [supervisorctl]
     std::string m_config_file_path;
 
   public:
@@ -22,9 +19,8 @@ class ServerConfig {
     void setConfigPath(std::string path) { m_config_file_path = path; }
 };
 
-
 // void logMsgDaemon(std::string msg) {
 //   static Logger;
-  
+
 //   Logger.printMsg();
 // }
