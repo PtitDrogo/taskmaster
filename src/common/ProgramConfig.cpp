@@ -81,14 +81,13 @@ int ProgramConfig::addEnvironnement(const std::string &value) {
     return 0;
 }
 
-void ProgramConfig::fillEnvp(int i) {
+void ProgramConfig::fillEnvp() {
     this->env.clear();
     this->envptr.clear();
 
-    this->env.reserve(this->envMap.size() + 1);
+    this->env.reserve(this->envMap.size());
     for (const auto &pair : this->envMap)
         this->env.push_back(pair.first + "=" + pair.second);
-    this->env.push_back("number=" + std::to_string(i));
 
     this->envptr.reserve(this->env.size() + 1);
     for (auto &s : this->env)
@@ -266,15 +265,15 @@ int ProgramConfig::startAllPrograms() {
     this->openRedirection();
     for (int i = 0; i < numprocs; ++i) {
         programs.emplace_back();
-        this->startProgram(programs.back(), i);
+        this->startProgram(programs.back());
     }
     return 1;
 }
 
 // we gotta just call /bin/sh on everything
-void ProgramConfig::startProgram(program &p, int i) {
+void ProgramConfig::startProgram(program &p) {
     // Fill the env variables into envptr that point to a char*
-    this->fillEnvp(i);
+    this->fillEnvp();
 
     // fork
     pid_t pid = fork();
@@ -342,7 +341,7 @@ void ProgramConfig::tick(program &p, time_t now) {
         break;
     case State::Backoff:
         if (now >= p.backoff_until)
-            startProgram(p, 0); // retry
+            startProgram(p); // retry
         break;
     case State::Stopping:
         if (now > p.kill_deadline)
@@ -364,7 +363,7 @@ void ProgramConfig::onExit(program &p, int status) {
         // or because we reloaded and it has the autoStart Feature.
         if (p.restarting) {
             p.restarting = false;
-            startProgram(p, 0); 
+            startProgram(p); 
         }
         return;
     }
@@ -385,7 +384,7 @@ void ProgramConfig::onExit(program &p, int status) {
     bool returnCodeIsInList = std::find(exitcodes.begin(), exitcodes.end(), WEXITSTATUS(status)) != exitcodes.end();
     bool diedNormally = WIFEXITED(status) && returnCodeIsInList;
     if (autorestart == AutoRestart::Always || (autorestart == AutoRestart::Unexpected && !diedNormally))
-        startProgram(p, 0);
+        startProgram(p);
 }
 
 // This could be done automatically with c++ 20 and better class organization, oh well !

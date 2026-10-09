@@ -62,7 +62,7 @@ class ProgramConfig {
     int parseSetting(const std::string &setting, const std::string &value);
     bool requestStop(program &p, int client_fd);
     bool shouldAutostart() const { return autostart; }
-    void startProgram(program &p, int i);
+    void startProgram(program &p);
     int startAllPrograms();
 	
     void tick(program &p, time_t now);
@@ -80,7 +80,7 @@ class ProgramConfig {
 	
     //environment
 	int addEnvironnement(const std::string &value);
-    void fillEnvp(int i);
+    void fillEnvp();
     char **getEnvp();
 
 	//redirection
