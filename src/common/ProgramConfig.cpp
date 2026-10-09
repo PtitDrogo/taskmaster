@@ -202,27 +202,41 @@ int ProgramConfig::openRedirection() {
     return 0;
 }
 
-void clearAutoChildLogDir(const std::string &dir, const std::string &identifier) {
-    std::regex re(".+?---" + identifier + "-\\S+\\.log\\.?\\d{0,4}");
-    std::error_code ec;
-    for (const auto &entry : fs::directory_iterator(dir, ec)) {
-        const std::string fname = entry.path().filename().string();
-        if (std::regex_match(fname, re))
-            fs::remove(entry.path(), ec);   // ignore errors, like supervisor
+//restart program dont change
+//reload and stop program create new files
+
+void ProgramConfig::removeOlderLogFile(const std::string &identifier) {
+    const fs::path directory = "/tmp";
+    const std::string path = this->name + "-" + identifier + "---taskmaster";
+
+    for (const auto& entry : fs::directory_iterator(directory)) {
+        if (!entry.is_regular_file()) continue;
+
+        const std::string name = entry.path().filename().string();
+
+        if (name.find(path) != std::string::npos){
+            std::error_code ec;
+            fs::remove(entry.path(), ec);
+        }
     }
 }
 
-int ProgramConfig::generateRandomFile(const std::string &logfile) {
-    std::string path = "/tmp/" + this->name + "-" + logfile + "---supervisor-XXXXXX.log";
+int ProgramConfig::generateRandomFile(const std::string &identifier) {
+    
+    //Remove the older random file
+    this->removeOlderLogFile(identifier);
+    //create random file
+    std::string path = "/tmp/" + this->name + "-" + identifier + "---taskmaster-XXXXXX.log";
     std::vector<char> buf(path.begin(), path.end());
     buf.push_back('\0');
     
-    std::cout << "the path is " << buf.data() << std::endl;
+    // std::cout << "the path is " << buf.data() << std::endl;
+    //create fd link to this file
     int fd = mkstemps(buf.data(), 4);
     if (fd < 0)
         return -1;
 
-    if (logfile == "stdout")
+    if (identifier == "stdout")
         this->stdout_logfile = buf.data();
     else
         this->stderr_logfile = buf.data();
@@ -230,11 +244,20 @@ int ProgramConfig::generateRandomFile(const std::string &logfile) {
     return fd;
 }
 
-int ProgramConfig::openLog(const std::string &path, const std::string &logfile) {
-    if (path == "AUTO")
-        return this->generateRandomFile(logfile);
+// deux choses a regler
+// supprimer le fichier dans le repertoire si il en existe un du meme type
+// Rajouter le singleton pour avoir le fd de log
 
-    const char *p = path.empty() ? "/dev/null" : path.c_str();
+int ProgramConfig::openLog(const std::string &path, const std::string &identifier) {
+    if (path == "AUTO" || path.empty())
+        return this->generateRandomFile(identifier);
+    const char *p = path == "NONE" ? "/dev/null" : path.c_str();
+    if(identifier == "stdout")
+        this->stdout_logfile = p;
+    else
+        this->stderr_logfile = p;
+    if(std::string(p) != "/dev/null")
+        this->removeOlderLogFile(identifier);
     return open(p, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
 }
 

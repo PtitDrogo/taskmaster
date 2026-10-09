@@ -84,8 +84,9 @@ class ProgramConfig {
     char **getEnvp();
 
 	//redirection
-    int openLog(const std::string &path, const std::string &logfile);
+    int openLog(const std::string &path, const std::string &identifier);
     void redirectFiles();
     int openRedirection();
-	int generateRandomFile(const std::string &logfile);
+    void removeOlderLogFile(const std::string &identifier);
+	int generateRandomFile(const std::string &identifier);
 };

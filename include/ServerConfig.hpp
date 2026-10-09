@@ -21,3 +21,10 @@ class ServerConfig {
     std::string getConfigPath() const { return m_config_file_path; }
     void setConfigPath(std::string path) { m_config_file_path = path; }
 };
+
+
+// void logMsgDaemon(std::string msg) {
+//   static Logger;
+  
+//   Logger.printMsg();
+// }
