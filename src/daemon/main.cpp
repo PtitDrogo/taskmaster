@@ -93,12 +93,16 @@ int main(int argc, char *argv[]) {
     }
     std::cout << "I am the Daemon/Server !" << std::endl;
     configs.printSettings();
-
+    openlog("taskmaster", LOG_PID | LOG_CONS, LOG_DAEMON);
     int server_fd = ServerConfig::startDaemonServer();
     if (server_fd == -1)
         return EXIT_FAILURE;
 
     notifyDiscord("Taskmaster Started");
+
+    syslog(LOG_INFO, "Supervisor started");
+    syslog(LOG_WARNING, "This is a warning message");
+    syslog(LOG_ERR, "This is an error message");
 
     // signal to know whats going on with children
     // When a child dies, the kernel sends SIGCHLD to its parent.

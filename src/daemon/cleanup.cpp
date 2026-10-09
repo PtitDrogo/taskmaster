@@ -1,5 +1,5 @@
+#include "server.hpp"
 #include "utils.hpp"
-#include <server.hpp>
 
 static bool anyStopping(Configs &configs) {
     for (auto &[name, cfg] : configs.programs)
@@ -31,6 +31,7 @@ static void killAllPrograms(Configs &configs) {
 }
 
 void cleanup(std::vector<pollfd> &fds, Configs &configs) {
+    closelog();
     for (auto &pfd : fds) {
         reply(pfd.fd, "Server is shutting down\n");
         close(pfd.fd);

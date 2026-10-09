@@ -6,6 +6,7 @@
 #include <poll.h>
 #include <unordered_map>
 #include <vector>
+#include <syslog.h>
 
 #include "ProgramConfig.hpp"
 #include "ServerConfig.hpp"
