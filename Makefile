@@ -13,6 +13,7 @@ NAME		=	$(NAME_D) $(NAME_C)
 SRCS_COMMON	=	$(SRCS_DIR)/common/ini.cpp \
  				$(SRCS_DIR)/common/ProgramConfig.cpp \
  				$(SRCS_DIR)/common/utils.cpp \
+				$(SRCS_DIR)/common/curl.cpp 
 
 SRCS_DAEMON	=	$(SRCS_DIR)/daemon/main.cpp \
 				$(SRCS_DIR)/daemon/ServerConfig.cpp \
@@ -39,7 +40,7 @@ RM		=	rm -f
 
 CC_C		=	cc
 
-CFLAGS		=	-Wall -Werror -Wextra -g3 -lreadline
+CFLAGS		=	-Wall -Werror -Wextra -g3 -lreadline -lcurl
 
 INCLUDES	=	-I $(HEADER_DIR) -MMD -MP
 

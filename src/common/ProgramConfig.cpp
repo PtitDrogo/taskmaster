@@ -1,4 +1,5 @@
 #include "ProgramConfig.hpp"
+#include "utils.hpp"
 #include <unordered_map>
 
 void ProgramConfig::printSettings() const {
@@ -152,7 +153,7 @@ int ProgramConfig::startAllPrograms() {
 // we gotta just call /bin/sh on everything
 void ProgramConfig::startProgram(program &p) {
     pid_t pid = fork();
-
+    notifyDiscord("Process PID: " + std::to_string(p.pid) + " is starting");
     if (pid < 0) {
         perror("fork");
         p.state = State::Fatal;
@@ -181,6 +182,7 @@ void ProgramConfig::startProgram(program &p) {
 }
 
 bool ProgramConfig::requestStop(program &p, int client_fd) {
+    notifyDiscord("Process PID: " + std::to_string(p.pid) + "is stopping");
     if (p.state == State::Backoff) {
         p.state = State::Stopped;
         return true;
@@ -218,12 +220,13 @@ void ProgramConfig::tick(program &p, time_t now) {
 
 void ProgramConfig::onExit(program &p, int status) {
     std::cout << "Program with PID" << p.pid << "Just ended" << std::endl;
+
     // we Asked for it
     if (p.killing) {
         p.state = State::Stopped;
         p.killing = false;
-        //We want it to restart, this could be because of the restart command
-        //or because we reloaded and it has the autoStart Feature.
+        // We want it to restart, this could be because of the restart command
+        // or because we reloaded and it has the autoStart Feature.
         if (p.restarting) {
             p.restarting = false;
             startProgram(p);

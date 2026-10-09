@@ -4,3 +4,4 @@
 #include <unistd.h>
 
 void reply(int fd, const std::string &msg);
+bool notifyDiscord(const std::string &message);

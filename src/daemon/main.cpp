@@ -98,6 +98,8 @@ int main(int argc, char *argv[]) {
     if (server_fd == -1)
         return EXIT_FAILURE;
 
+    notifyDiscord("Taskmaster Started");
+
     // signal to know whats going on with children
     // When a child dies, the kernel sends SIGCHLD to its parent.
     struct sigaction sa{};

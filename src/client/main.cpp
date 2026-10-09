@@ -22,7 +22,6 @@ int main(int argc, char *argv[]) {
     }
 
     ClientConfig config;
-
     int result = ini_parse(argv[1], handler, &config);
     if (result < 0) {
         std::cerr << "Could not open config file\n";
