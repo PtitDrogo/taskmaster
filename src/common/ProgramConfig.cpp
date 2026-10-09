@@ -1,4 +1,5 @@
 #include "ProgramConfig.hpp"
+#include "utils.hpp"
 #include <unordered_map>
 
 void ProgramConfig::printSettings() const {
@@ -112,7 +113,7 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             startretries = std::stoi(value);
         } else if (setting == "stoptime") {
             stoptime = std::stoi(value);
-        } else if (setting == "workingdir") {
+        } else if (setting == "directory") {
             workingdir = value;
         } else if (setting == "stdout_discard") {
             discard_stdout = (value == "true");
@@ -277,13 +278,17 @@ void ProgramConfig::startProgram(program &p, int i) {
 
     // fork
     pid_t pid = fork();
-
+    notifyDiscord("Process PID: " + std::to_string(p.pid) + " is starting");
     if (pid < 0) {
         perror("fork");
         p.state = State::Fatal;
         return;
     }
     if (pid == 0) {
+        if (!this->workingdir.empty() && chdir(this->workingdir.c_str()) == -1) {
+            perror("chdir failed");
+            _exit(127);
+        }
         setpgid(0, 0); // L'enfant se fou dans son groupe 0
         // Execve takes in char* and not const char*, so we have to do this.
         char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)this->cmd.data(), nullptr};
@@ -312,6 +317,7 @@ void ProgramConfig::startProgram(program &p, int i) {
 }
 
 bool ProgramConfig::requestStop(program &p, int client_fd) {
+    notifyDiscord("Process PID: " + std::to_string(p.pid) + "is stopping");
     if (p.state == State::Backoff) {
         p.state = State::Stopped;
         return true;
@@ -349,11 +355,14 @@ void ProgramConfig::tick(program &p, time_t now) {
 
 void ProgramConfig::onExit(program &p, int status) {
     std::cout << "Program with PID" << p.pid << "Just ended" << std::endl;
+
     // we Asked for it
     if (p.killing) {
         p.state = State::Stopped;
         p.killing = false;
-        if (p.restarting) { 
+        // We want it to restart, this could be because of the restart command
+        // or because we reloaded and it has the autoStart Feature.
+        if (p.restarting) {
             p.restarting = false;
             startProgram(p, 0); 
         }

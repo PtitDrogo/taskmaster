@@ -8,6 +8,7 @@
 #include "ClientConfig.hpp"
 #include "ini.h"
 
-#define HELP_STRING "Help - Status - Start - Stop\n Restart - Update - Shutdown"
+#define HELP_STRING "help - status - start - stop\nrestart - reload - shutdown"
 
 void readResponseAndPrint(int fd);
+char **command_completion(const char *text, int start, int end);

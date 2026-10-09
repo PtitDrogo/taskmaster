@@ -83,6 +83,7 @@ int main(int argc, char *argv[]) {
     Configs configs;
 
     configs.setConfigPath(argv[1]);
+
     int result = ini_parse(argv[1], handler, &configs);
     if (result < 0) {
         std::cerr << "Could not open config file\n";
@@ -92,11 +93,18 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     std::cout << "I am the Daemon/Server !" << std::endl;
-    // configs.printSettings();
+    configs.printSettings();
+    openlog("taskmaster", LOG_PID | LOG_CONS, LOG_DAEMON);
+    notifyDiscord("Taskmaster Started");
 
+    
     int server_fd = ServerConfig::startDaemonServer();
     if (server_fd == -1)
         return EXIT_FAILURE;
+
+    syslog(LOG_INFO, "Supervisor started");
+    syslog(LOG_WARNING, "This is a warning message");
+    syslog(LOG_ERR, "This is an error message");
 
     // signal to know whats going on with children
     // When a child dies, the kernel sends SIGCHLD to its parent.

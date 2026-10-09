@@ -47,7 +47,7 @@ class ProgramConfig {
     std::map<std::string, std::string> envMap;
     std::vector<std::string> env;
     std::vector<char *> envptr;
-    std::string workingdir;
+    std::string workingdir = "";
     mode_t umask = 022; // Octal value, this is about setting the files perimission this program will create.
     
     // runtime
