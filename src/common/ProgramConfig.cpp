@@ -1,5 +1,7 @@
 #include "ProgramConfig.hpp"
 #include "utils.hpp"
+#include <pty.h>
+#include <sys/stat.h>
 #include <unordered_map>
 
 void ProgramConfig::printSettings() const {
@@ -15,7 +17,7 @@ void ProgramConfig::printSettings() const {
               << "  stdout logfile: " << stdout_logfile << "\n"
               << "  stderr logfile: " << stderr_logfile << "\n"
               << "  workingdir: " << workingdir << "\n"
-              << "  umask: " << std::oct << umask << std::dec << "\n";
+              << "  umask: " << std::oct << m_umask << std::dec << "\n";
 
     if (!env.empty()) {
         std::cout << "  env:\n";
@@ -123,7 +125,7 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
         } else if (setting == "stderr_logfile") {
             stderr_logfile = value;
         } else if (setting == "umask") {
-            umask = std::stoi(value, nullptr, 8);
+            m_umask = std::stoi(value, nullptr, 8);
         } else if (setting == "autorestart") {
             if (value == "always")
                 autorestart = AutoRestart::Always;
@@ -202,19 +204,20 @@ int ProgramConfig::openRedirection() {
     return 0;
 }
 
-//restart program dont change
-//reload and stop program create new files
+// restart program dont change
+// reload and stop program create new files
 
 void ProgramConfig::removeOlderLogFile(const std::string &identifier) {
     const fs::path directory = "/tmp";
     const std::string path = this->name + "-" + identifier + "---taskmaster";
 
-    for (const auto& entry : fs::directory_iterator(directory)) {
-        if (!entry.is_regular_file()) continue;
+    for (const auto &entry : fs::directory_iterator(directory)) {
+        if (!entry.is_regular_file())
+            continue;
 
         const std::string name = entry.path().filename().string();
 
-        if (name.find(path) != std::string::npos){
+        if (name.find(path) != std::string::npos) {
             std::error_code ec;
             fs::remove(entry.path(), ec);
         }
@@ -222,16 +225,16 @@ void ProgramConfig::removeOlderLogFile(const std::string &identifier) {
 }
 
 int ProgramConfig::generateRandomFile(const std::string &identifier) {
-    
-    //Remove the older random file
+
+    // Remove the older random file
     this->removeOlderLogFile(identifier);
-    //create random file
+    // create random file
     std::string path = "/tmp/" + this->name + "-" + identifier + "---taskmaster-XXXXXX.log";
     std::vector<char> buf(path.begin(), path.end());
     buf.push_back('\0');
-    
+
     // std::cout << "the path is " << buf.data() << std::endl;
-    //create fd link to this file
+    // create fd link to this file
     int fd = mkstemps(buf.data(), 4);
     if (fd < 0)
         return -1;
@@ -252,11 +255,11 @@ int ProgramConfig::openLog(const std::string &path, const std::string &identifie
     if (path == "AUTO" || path.empty())
         return this->generateRandomFile(identifier);
     const char *p = path == "NONE" ? "/dev/null" : path.c_str();
-    if(identifier == "stdout")
+    if (identifier == "stdout")
         this->stdout_logfile = p;
     else
         this->stderr_logfile = p;
-    if(std::string(p) != "/dev/null")
+    if (std::string(p) != "/dev/null")
         this->removeOlderLogFile(identifier);
     return open(p, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
 }
@@ -273,33 +276,28 @@ int ProgramConfig::startAllPrograms() {
 // we gotta just call /bin/sh on everything
 void ProgramConfig::startProgram(program &p) {
     // Fill the env variables into envptr that point to a char*
-    this->fillEnvp();
+    if (p.master_fd != -1) {
+        close(p.master_fd);
+        p.master_fd = -1;
+    }
 
-    // fork
-    pid_t pid = fork();
-    notifyDiscord("Process PID: " + std::to_string(p.pid) + " is starting");
+    pid_t pid = forkpty(&p.master_fd, nullptr, nullptr, nullptr);
     if (pid < 0) {
-        perror("fork");
+        perror("forkpty");
         p.state = State::Fatal;
         return;
     }
+
     if (pid == 0) {
-        if (!this->workingdir.empty() && chdir(this->workingdir.c_str()) == -1) {
-            perror("chdir failed");
+        // stdin/out/err are already the pty slave; forkpty also did setsid()
+        if (!workingdir.empty() && chdir(workingdir.c_str()) == -1)
             _exit(127);
-        }
-        setpgid(0, 0); // L'enfant se fou dans son groupe 0
-        // Execve takes in char* and not const char*, so we have to do this.
-        char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)this->cmd.data(), nullptr};
-        char **envp = this->getEnvp();
-
-        // redirecting to files
-        this->redirectFiles();
-
-        execve("/bin/sh", argv, envp);
-
+        umask(this->m_umask);
+        setpgid(0, 0);
+        char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)cmd.data(), nullptr};
+        execve("/bin/sh", argv, getEnvp());
         perror("execve failed");
-        _exit(127); // use _exit, not exit, in a failed post-fork child
+        _exit(127);
     } else {
         // close(this->fdout);
         // close(this->fderr);
@@ -308,11 +306,59 @@ void ProgramConfig::startProgram(program &p) {
 
         // Were updating the program object passed in
         // We do this so that when we restart a program, we use the same object.
+
+        //this makes it so that the fd gets closes automatically if we execve smth else.
+        fcntl(p.master_fd, F_SETFD, FD_CLOEXEC);
+        //Non blocking read and writes to this fd.
+        fcntl(p.master_fd, F_SETFL, O_NONBLOCK);
+        
+
         p.pid = pid;
         p.state = State::Starting;
         p.start_time = time(nullptr);
         p.killing = false;
     }
+
+    // this->fillEnvp();
+
+    // // fork
+    // pid_t pid = fork();
+    // notifyDiscord("Process PID: " + std::to_string(p.pid) + " is starting");
+    // if (pid < 0) {
+    //     perror("fork");
+    //     p.state = State::Fatal;
+    //     return;
+    // }
+    // if (pid == 0) {
+    //     if (!this->workingdir.empty() && chdir(this->workingdir.c_str()) == -1) {
+    //         perror("chdir failed");
+    //         _exit(127);
+    //     }
+    //     setpgid(0, 0); // L'enfant se fou dans son groupe 0
+    //     // Execve takes in char* and not const char*, so we have to do this.
+    //     char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)this->cmd.data(), nullptr};
+    //     char **envp = this->getEnvp();
+
+    //     // redirecting to files
+    //     this->redirectFiles();
+
+    //     execve("/bin/sh", argv, envp);
+
+    //     perror("execve failed");
+    //     _exit(127); // use _exit, not exit, in a failed post-fork child
+    // } else {
+    // // close(this->fdout);
+    // // close(this->fderr);
+    // setpgid(pid, pid); // Le parent fout l'enfant dans le groupe de son PID
+    //                    // On fait les deux pour une histoire de race condition.
+
+    // // Were updating the program object passed in
+    // // We do this so that when we restart a program, we use the same object.
+    // p.pid = pid;
+    // p.state = State::Starting;
+    // p.start_time = time(nullptr);
+    // p.killing = false;
+    // }
 }
 
 bool ProgramConfig::requestStop(program &p, int client_fd) {
@@ -363,7 +409,7 @@ void ProgramConfig::onExit(program &p, int status) {
         // or because we reloaded and it has the autoStart Feature.
         if (p.restarting) {
             p.restarting = false;
-            startProgram(p); 
+            startProgram(p);
         }
         return;
     }
@@ -392,17 +438,17 @@ void ProgramConfig::onExit(program &p, int status) {
 bool ProgramConfig::areSettingsEqual(const ProgramConfig &a, const ProgramConfig &b) {
     return std::tie(a.name, a.cmd, a.numprocs, a.autostart, a.startsecs, a.autorestart, a.exitcodes, a.startretries,
                     a.stopsignal, a.stoptime, a.discard_stdout, a.discard_stderr, a.stdout_logfile, a.stderr_logfile,
-                    a.env, a.workingdir, a.umask) ==
+                    a.env, a.workingdir, a.m_umask) ==
            std::tie(b.name, b.cmd, b.numprocs, b.autostart, b.startsecs, b.autorestart, b.exitcodes, b.startretries,
                     b.stopsignal, b.stoptime, b.discard_stdout, b.discard_stderr, b.stdout_logfile, b.stderr_logfile,
-                    b.env, b.workingdir, b.umask);
+                    b.env, b.workingdir, b.m_umask);
 }
 
 void ProgramConfig::copySettings(const ProgramConfig &src, ProgramConfig &dest) {
     std::tie(dest.name, dest.cmd, dest.numprocs, dest.autostart, dest.startsecs, dest.autorestart, dest.exitcodes,
              dest.startretries, dest.stopsignal, dest.stoptime, dest.discard_stdout, dest.discard_stderr,
-             dest.stdout_logfile, dest.stderr_logfile, dest.env, dest.workingdir, dest.umask) =
+             dest.stdout_logfile, dest.stderr_logfile, dest.env, dest.workingdir, dest.m_umask) =
         std::tie(src.name, src.cmd, src.numprocs, src.autostart, src.startsecs, src.autorestart, src.exitcodes,
                  src.startretries, src.stopsignal, src.stoptime, src.discard_stdout, src.discard_stderr,
-                 src.stdout_logfile, src.stderr_logfile, src.env, src.workingdir, src.umask);
+                 src.stdout_logfile, src.stderr_logfile, src.env, src.workingdir, src.m_umask);
 }

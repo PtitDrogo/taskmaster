@@ -5,13 +5,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
+#include <filesystem>
 #include <iostream>
 #include <map>
+#include <regex>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
-#include <regex>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 
@@ -27,6 +27,9 @@ struct program {
     time_t kill_deadline = 0;
     int waiting_client = -1; // Technically this should be a vector of clients.
     bool restarting = false;
+
+    int master_fd = -1;
+    int attached_client = -1;
 };
 
 // This hold the config of every created program.
@@ -48,8 +51,8 @@ class ProgramConfig {
     std::vector<std::string> env;
     std::vector<char *> envptr;
     std::string workingdir = "";
-    mode_t umask = 022; // Octal value, this is about setting the files perimission this program will create.
-    
+    mode_t m_umask = 022; // Octal value, this is about setting the files perimission this program will create.
+
     // runtime
     bool m_exiled_program = false; // mtg reference, stronger than destroy, since it wont show in logs.
     int fdout = 0;
@@ -64,11 +67,11 @@ class ProgramConfig {
     bool shouldAutostart() const { return autostart; }
     void startProgram(program &p);
     int startAllPrograms();
-	
+
     void tick(program &p, time_t now);
     void onExit(program &p, int status);
     int parseSignals(std::string signal);
-    
+
     std::string getName() { return name; }
     void setName(std::string newName) { name = newName; }
     void setProgramToExile() { m_exiled_program = true; }
@@ -77,16 +80,16 @@ class ProgramConfig {
 
     static bool areSettingsEqual(const ProgramConfig &a, const ProgramConfig &b);
     static void copySettings(const ProgramConfig &src, ProgramConfig &dest);
-	
-    //environment
-	int addEnvironnement(const std::string &value);
+
+    // environment
+    int addEnvironnement(const std::string &value);
     void fillEnvp();
     char **getEnvp();
 
-	//redirection
+    // redirection
     int openLog(const std::string &path, const std::string &identifier);
     void redirectFiles();
     int openRedirection();
     void removeOlderLogFile(const std::string &identifier);
-	int generateRandomFile(const std::string &identifier);
+    int generateRandomFile(const std::string &identifier);
 };
