@@ -13,3 +13,11 @@
    ...
    fun:add_history
 }
+
+{
+   curl
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:curl_easy_perform
+}

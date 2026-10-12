@@ -50,9 +50,14 @@ struct Configs {
     void setConfigPath(std::string path) { server.setConfigPath(path); }
 };
 
-int dropPrivileges(const std::string &user);
+
+
+
 int handleCommands(int client_fd, std::string fullCmd, Configs &configs);
 void cleanup(std::vector<pollfd> &fds, Configs &configs);
 int handleReload(int client_fd, Configs &configs);
 int handler(void *user, const char *section, const char *name, const char *value);
 int handleReload(int client_fd, Configs &configs);
+
+
+int dropPrivilegesServer(const std::string &user);

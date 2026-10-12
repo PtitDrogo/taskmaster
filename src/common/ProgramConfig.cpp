@@ -104,10 +104,15 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             cmd = value;
         } else if (setting == "autostart") {
             autostart = (value == "true");
+        } else if (setting == "user") {
+            user = value;
         } else if (setting == "numprocs") {
             numprocs = std::stoi(value);
         } else if (setting == "startsecs") {
             startsecs = std::stoi(value);
+            if (startsecs <= 0) {
+                throw std::out_of_range("startsecs must be a value above 0");
+            }
         } else if (setting == "startretries") {
             startretries = std::stoi(value);
         } else if (setting == "stoptime") {
@@ -202,19 +207,20 @@ int ProgramConfig::openRedirection() {
     return 0;
 }
 
-//restart program dont change
-//reload and stop program create new files
+// restart program dont change
+// reload and stop program create new files
 
 void ProgramConfig::removeOlderLogFile(const std::string &identifier) {
     const fs::path directory = "/tmp";
     const std::string path = this->name + "-" + identifier + "---taskmaster";
 
-    for (const auto& entry : fs::directory_iterator(directory)) {
-        if (!entry.is_regular_file()) continue;
+    for (const auto &entry : fs::directory_iterator(directory)) {
+        if (!entry.is_regular_file())
+            continue;
 
         const std::string name = entry.path().filename().string();
 
-        if (name.find(path) != std::string::npos){
+        if (name.find(path) != std::string::npos) {
             std::error_code ec;
             fs::remove(entry.path(), ec);
         }
@@ -222,16 +228,16 @@ void ProgramConfig::removeOlderLogFile(const std::string &identifier) {
 }
 
 int ProgramConfig::generateRandomFile(const std::string &identifier) {
-    
-    //Remove the older random file
+
+    // Remove the older random file
     this->removeOlderLogFile(identifier);
-    //create random file
+    // create random file
     std::string path = "/tmp/" + this->name + "-" + identifier + "---taskmaster-XXXXXX.log";
     std::vector<char> buf(path.begin(), path.end());
     buf.push_back('\0');
-    
+
     // std::cout << "the path is " << buf.data() << std::endl;
-    //create fd link to this file
+    // create fd link to this file
     int fd = mkstemps(buf.data(), 4);
     if (fd < 0)
         return -1;
@@ -252,11 +258,11 @@ int ProgramConfig::openLog(const std::string &path, const std::string &identifie
     if (path == "AUTO" || path.empty())
         return this->generateRandomFile(identifier);
     const char *p = path == "NONE" ? "/dev/null" : path.c_str();
-    if(identifier == "stdout")
+    if (identifier == "stdout")
         this->stdout_logfile = p;
     else
         this->stderr_logfile = p;
-    if(std::string(p) != "/dev/null")
+    if (std::string(p) != "/dev/null")
         this->removeOlderLogFile(identifier);
     return open(p, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
 }
@@ -284,6 +290,9 @@ void ProgramConfig::startProgram(program &p) {
         return;
     }
     if (pid == 0) {
+        if (dropPrivilegesProgram(this->user) == -1) {
+            _exit(127);
+        }
         if (!this->workingdir.empty() && chdir(this->workingdir.c_str()) == -1) {
             perror("chdir failed");
             _exit(127);
@@ -363,12 +372,12 @@ void ProgramConfig::onExit(program &p, int status) {
         // or because we reloaded and it has the autoStart Feature.
         if (p.restarting) {
             p.restarting = false;
-            startProgram(p); 
+            startProgram(p);
         }
         return;
     }
     time_t now = time(nullptr);
-    bool diedTooEarly = p.state == State::Starting && now - p.start_time < startsecs;
+    bool diedTooEarly = p.state == State::Starting && now - p.start_time <= startsecs;
     if (diedTooEarly) {
         // died too early: failed start
         if (++p.curr_retries > startretries) {

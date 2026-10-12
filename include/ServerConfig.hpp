@@ -17,6 +17,7 @@ class ServerConfig {
     static int startDaemonServer();
     std::string getConfigPath() const { return m_config_file_path; }
     void setConfigPath(std::string path) { m_config_file_path = path; }
+    const std::string getUser() { return user; }
 };
 
 // void logMsgDaemon(std::string msg) {
