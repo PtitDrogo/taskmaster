@@ -13,7 +13,7 @@ bool notifyDiscord(const std::string &message) {
     std::string webhook_url = getEnv("DISCORD_WEBHOOK");
     std::string esc;
     if (webhook_url.empty()) {
-        std::cout << "You didnt't set the discord webhook token" << std::endl;
+        // std::cout << "You didnt't set the discord webhook token" << std::endl;
         return false;
     }
     for (char c : message) {

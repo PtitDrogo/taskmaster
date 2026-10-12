@@ -92,8 +92,14 @@ int main(int argc, char *argv[]) {
         std::cerr << "Parse error on line " << result << "\n";
         return 1;
     }
+    Logger::get().writePid(configs.server.getPidFile());
+    if(Logger::get().open(configs.server.getLogFile()) < 0 &&
+        Logger::get().writePid(configs.server.getPidFile()) < 0){
+        return errno;
+    }
+    Logger::get().info("Tasmasterd started with pid " +  std::to_string(getpid()));
     std::cout << "I am the Daemon/Server !" << std::endl;
-    configs.printSettings();
+    // configs.printSettings();
     openlog("taskmaster", LOG_PID | LOG_CONS, LOG_DAEMON);
     notifyDiscord("Taskmaster Started");
 

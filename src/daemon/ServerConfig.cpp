@@ -7,7 +7,9 @@
 
 ServerConfig::ServerConfig(/* args */) {}
 
-ServerConfig::~ServerConfig() {}
+ServerConfig::~ServerConfig() {
+    unlink(this->pidfile.data());
+}
 
 void ServerConfig::printSettings() const {
     std::cout << "[unix_http_server]\n"

@@ -1,5 +1,6 @@
 #include "ProgramConfig.hpp"
 #include "utils.hpp"
+#include "ServerConfig.hpp"
 #include <unordered_map>
 
 void ProgramConfig::printSettings() const {
@@ -304,8 +305,9 @@ void ProgramConfig::startProgram(program &p) {
         // close(this->fdout);
         // close(this->fderr);
         setpgid(pid, pid); // Le parent fout l'enfant dans le groupe de son PID
-                           // On fait les deux pour une histoire de race condition.
-
+        // On fait les deux pour une histoire de race condition.
+        
+        Logger::get().info("spawned: '" + this->name + "' with pid " + std::to_string(pid));
         // Were updating the program object passed in
         // We do this so that when we restart a program, we use the same object.
         p.pid = pid;
