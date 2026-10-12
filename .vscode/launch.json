@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug my program",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/taskmasterd",
+      "args": ["myconfigfile.conf"],
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "preLaunchTask": "make",
+      "stopAtEntry": false
+    }
+  ]
+}
