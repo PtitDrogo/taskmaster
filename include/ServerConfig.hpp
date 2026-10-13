@@ -6,7 +6,6 @@
 class ServerConfig {
   private:
     std::string user;
-    std::string logfile;
     std::string sockfile; // [unix_http_server]
     std::string logfile = "taskmasterd.log";
     std::string pidfile = "taskmasterd.pid";
