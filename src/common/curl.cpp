@@ -44,7 +44,8 @@ bool notifyDiscord(const std::string &message) {
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
-
+    
+    // This does a cheeky allocation since its a getaddrinfo.
     CURLcode res = curl_easy_perform(curl);
 
     curl_slist_free_all(headers);

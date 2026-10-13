@@ -5,6 +5,8 @@
 
 class ServerConfig {
   private:
+    std::string user;
+    std::string logfile;
     std::string sockfile; // [unix_http_server]
     std::string logfile = "taskmasterd.log";
     std::string pidfile = "taskmasterd.pid";
@@ -22,6 +24,7 @@ class ServerConfig {
     std::string getLogFile(){ return this->logfile;}
     std::string getPidFile(){ return this->pidfile;}
     void setConfigPath(std::string path) { m_config_file_path = path; }
+    const std::string getUser() { return user; }
 };
 
 class Logger {

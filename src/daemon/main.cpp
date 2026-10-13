@@ -103,11 +103,13 @@ int main(int argc, char *argv[]) {
     openlog("taskmaster", LOG_PID | LOG_CONS, LOG_DAEMON);
     notifyDiscord("Taskmaster Started");
 
-    
     int server_fd = ServerConfig::startDaemonServer();
     if (server_fd == -1)
         return EXIT_FAILURE;
 
+    if (dropPrivilegesServer(configs.server.getUser()) == -1) {
+        return EXIT_FAILURE;
+    }
     syslog(LOG_INFO, "Supervisor started");
     syslog(LOG_WARNING, "This is a warning message");
     syslog(LOG_ERR, "This is an error message");
@@ -137,12 +139,6 @@ int main(int argc, char *argv[]) {
     // pollfd list: index 0 is always the listening socket, rest are clients
     std::vector<pollfd> fds;
     fds.push_back({server_fd, POLLIN, 0});
-
-    if (dropPrivileges("tfreydie") == -1 && dropPrivileges("bpoyet") == -1) {
-        std::cerr << "Error trying to default to tfreydie or bpoyet user privileges\n";
-        return 1;
-        // Dont hardcode this before sending it :)
-    }
 
     // Launch All programs of all configs
     for (auto &[name, cfg] : configs.programs) {
@@ -182,8 +178,8 @@ int main(int argc, char *argv[]) {
 
         if (ready == 0)
             continue;
-        
-        //new client
+
+        // new client
         if (fds[0].revents & POLLIN) {
             int client_fd = accept(server_fd, nullptr, nullptr);
             if (client_fd >= 0) {
