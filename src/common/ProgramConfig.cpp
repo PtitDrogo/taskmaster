@@ -1,9 +1,11 @@
 #include "ProgramConfig.hpp"
+#include "ServerConfig.hpp"
 #include "utils.hpp"
 #include <pty.h>
 #include <sys/stat.h>
-#include "ServerConfig.hpp"
 #include <unordered_map>
+#include <wordexp.h>
+
 
 void ProgramConfig::printSettings() const {
     std::cout << "Section: " << name << "\n"
@@ -101,55 +103,66 @@ void ProgramConfig::fillEnvp() {
 
 char **ProgramConfig::getEnvp() { return this->envptr.data(); }
 
+static int positiveCheck(int val, std::string setting) {
+    if (val <= 0) {
+        throw std::out_of_range(setting + "must be a value above 0");
+    }
+    return val;
+}
+
 int ProgramConfig::parseSetting(const std::string &setting, const std::string &value) {
     try {
-        if (setting == "command") {
-            cmd = value;
-        } else if (setting == "autostart") {
-            autostart = (value == "true");
-        } else if (setting == "user") {
-            user = value;
-        } else if (setting == "numprocs") {
-            numprocs = std::stoi(value);
-        } else if (setting == "startsecs") {
-            startsecs = std::stoi(value);
-            if (startsecs <= 0) {
-                throw std::out_of_range("startsecs must be a value above 0");
-            }
-        } else if (setting == "startretries") {
-            startretries = std::stoi(value);
-        } else if (setting == "stopwaitsecs") {
-            stopwaitsecs = std::stoi(value);
-        } else if (setting == "directory") {
-            workingdir = value;
-        } else if (setting == "stdout_discard") {
-            discard_stdout = (value == "true");
-        } else if (setting == "stderr_discard") {
-            discard_stderr = (value == "true");
-        } else if (setting == "stdout_logfile") {
-            stdout_logfile = value;
-        } else if (setting == "stderr_logfile") {
-            stderr_logfile = value;
-        } else if (setting == "umask") {
+        if (setting == "command")
+            return setOnce(setting, cmd, value);
+        else if (setting == "autostart")
+            return setOnce(setting, autostart, value == "true");
+        else if (setting == "user")
+            return setOnce(setting, user, value);
+        else if (setting == "numprocs")
+            return setOnce(setting, numprocs, positiveCheck(std::stoi(value), "numprocs"));
+        else if (setting == "startsecs")
+            return setOnce(setting, startsecs, positiveCheck(std::stoi(value), "startsecs"));
+        else if (setting == "startretries")
+            return setOnce(setting, startretries, std::stoi(value));
+        else if (setting == "stopwaitsecs")
+            return setOnce(setting, stopwaitsecs, std::stoi(value));
+        else if (setting == "directory")
+            return setOnce(setting, workingdir, value);
+        else if (setting == "stdout_discard")
+            return setOnce(setting, discard_stdout, value == "true");
+        else if (setting == "stderr_discard")
+            return setOnce(setting, discard_stderr, value == "true");
+        else if (setting == "stdout_logfile")
+            return setOnce(setting, stdout_logfile, value);
+        else if (setting == "stderr_logfile")
+            return setOnce(setting, stderr_logfile, value);
+        else if (setting == "umask")
             m_umask = std::stoi(value, nullptr, 8);
-        } else if (setting == "autorestart") {
+        else if (setting == "autorestart") {
+            AutoRestart ar;
             if (value == "always")
-                autorestart = AutoRestart::Always;
+                ar = AutoRestart::Always;
             else if (value == "never")
-                autorestart = AutoRestart::Never;
+                ar = AutoRestart::Never;
             else if (value == "unexpected")
-                autorestart = AutoRestart::Unexpected;
-        } else if (setting == "exitcodes") {
-            exitcodes.push_back(std::stoi(value));
-        } else if (setting == "stopsignal") {
-            int signal = parseSignals(value);
-            if (signal != -1) {
-                stopsignal = signal;
+                ar = AutoRestart::Unexpected;
+            else {
+                std::cerr << "Invalid autorestart value '" << value << "' in [" << name << "]\n";
+                return 0;
             }
-        } else if (setting == "environment") {
-            int err = addEnvironnement(value);
-            if (err) {
-                std::cerr << "Unknown setting: " << setting << " in [" << name << "]\n";
+            return setOnce(setting, autorestart, ar);
+        } else if (setting == "exitcodes") {
+            exitcodes.push_back(std::stoi(value)); // repeatable
+        } else if (setting == "stopsignal") {
+            int sig = parseSignals(value);
+            if (sig == -1) {
+                std::cerr << "Invalid stopsignal '" << value << "' in [" << name << "]\n";
+                return 0;
+            }
+            return setOnce(setting, stopsignal, sig);
+        } else if (setting == "environment") { // repeatable
+            if (addEnvironnement(value)) {
+                std::cerr << "Invalid environment '" << value << "' in [" << name << "]\n";
                 return 0;
             }
         } else {
@@ -157,7 +170,7 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             return 0;
         }
     } catch (const std::exception &e) {
-        std::cerr << e.what() << '\n';
+        std::cerr << "Error parsing '" << setting << "' in [" << name << "]: " << e.what() << '\n';
         return 0;
     }
 
@@ -340,6 +353,7 @@ void ProgramConfig::startProgram(program &p) {
     this->fillEnvp();
     this->closeMaster(p);
     this->closeErr(p);
+    p.scrollback.clear();
 
     int errp[2];
     if (pipe2(errp, O_CLOEXEC) == -1) {
@@ -366,8 +380,13 @@ void ProgramConfig::startProgram(program &p) {
             _exit(127);
         }
         ::umask(m_umask);
-        char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)cmd.data(), nullptr};
-        execve("/bin/sh", argv, getEnvp());
+        wordexp_t p;
+        std::cout << cmd.c_str() << std::endl;
+        if (wordexp(cmd.c_str(), &p, WRDE_NOCMD | WRDE_UNDEF) == 0) {
+            execvpe(p.we_wordv[0], p.we_wordv, getEnvp());
+        }
+        wordfree(&p);
+
         _exit(127);
     }
     Logger::get().info("spawned: '" + this->name + "' with pid " + std::to_string(pid));
@@ -381,7 +400,6 @@ void ProgramConfig::startProgram(program &p) {
     p.state = State::Starting;
     p.start_time = time(nullptr);
     p.killing = false;
-    
 }
 
 void ProgramConfig::closeMaster(program &p) {
@@ -400,7 +418,7 @@ void ProgramConfig::onMasterReadable(program &p) {
     ssize_t n = read(p.master_fd, buf, sizeof buf);
     if (n > 0) {
         if (this->fdout > 0)
-            write(this->fdout, buf, n); 
+            write(this->fdout, buf, n);
         p.scrollback.append(buf, n);
         if (p.scrollback.size() > SCROLLBACK_MAX)
             p.scrollback.erase(0, p.scrollback.size() - SCROLLBACK_MAX);

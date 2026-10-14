@@ -7,9 +7,7 @@
 
 ServerConfig::ServerConfig(/* args */) {}
 
-ServerConfig::~ServerConfig() {
-    unlink(this->pidfile.data());
-}
+ServerConfig::~ServerConfig() { unlink(this->pidfile.data()); }
 
 void ServerConfig::printSettings() const {
     std::cout << "  user: " << user << "\n"
@@ -19,8 +17,14 @@ void ServerConfig::printSettings() const {
 
 int ServerConfig::parseSetting(const std::string &setting, const std::string &value) {
     if (setting == "user") {
+        if (!user.empty()) {
+            std::cerr << "Can't set 'user' twice in [supervisord]\n";
+        }
         user = value;
     } else if (setting == "logfile") {
+        if (logfile != "taskmasterd.log") {
+            std::cerr << "Can't set 'logfile' twice in [supervisord]\n";
+        }
         logfile = value;
     } else {
         std::cerr << "Unknown setting: " << setting << " in [supervisord]\n";

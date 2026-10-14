@@ -1,7 +1,7 @@
-#pragma once
+#ifndef CLIENT_CONFIG_HPP
+#define CLIENT_CONFIG_HPP
 
 #include <iostream>
-
 
 class ClientConfig {
   private:
@@ -17,3 +17,5 @@ class ClientConfig {
     int parseSetting(const std::string &setting, const std::string &value);
     static int startClient();
 };
+
+#endif

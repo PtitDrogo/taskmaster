@@ -1,5 +1,7 @@
 #include "ServerConfig.hpp"
+#include "handlers.hpp"
 #include "server.hpp"
+#include "signal.hpp"
 #include "utils.hpp"
 #include <csignal>
 #include <cstring>
@@ -9,83 +11,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <vector>
-
-volatile sig_atomic_t child_exited = 0;
-volatile sig_atomic_t stop_requested = 0;
-volatile sig_atomic_t reload_requested = 0;
-
-void sigchld_handler(int) { child_exited = 1; }
-void stop_handler(int) { stop_requested = 1; }
-void reload_handler(int) { reload_requested = 1; }
-
-/*
-Exemple:
-[program:web]
-command = python app.py
-autostart = true
-numprocs = 3
-
-Section = [program:web] //Same for all 3 key/value pair
-name = "command"
-value = "python app.py"
-
-*/
-
-int handler(void *user, const char *section, const char *name, const char *value) {
-    auto *cfg = static_cast<Configs *>(user);
-    std::string sect(section), setting(name), val(value);
-    int err = 1;
-    if (sect.rfind("program:", 0) == 0) {
-        std::string progname = sect.substr(8); // strip "program:"
-        ProgramConfig &pc = cfg->programs[progname];
-        pc.setName(progname);
-        err = pc.parseSetting(setting, val);
-    } else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
-        err = cfg->server.parseSetting(setting, val);
-    } else if (sect.rfind("rpcinterface:", 0) == 0) {
-        // Idk what that is I dont think we need to handle that
-    }
-    return err;
-}
-
-void handleDeadProcesses(Configs &configs) {
-    int status;
-    pid_t pid;
-
-    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-        auto [cfg, p] = configs.findByPid(pid);
-        if (!p)
-            continue;
-        cfg->onExit(*p, status);
-
-        int fd = p->waiting_client;
-        if (fd != -1) {
-            p->waiting_client = -1;
-            bool othersPending = false;
-            // we only send a reply once all the processes of a config are dead.
-            for (auto &q : cfg->programs)
-                if (q.waiting_client == fd)
-                    othersPending = true;
-            if (!othersPending) {
-                reply(fd, p->state == State::Starting ? "restarted\n" : "stopped\n");
-                if (cfg->isExiled()) {
-                    configs.programs.erase(cfg->getName());
-                }
-            }
-        }
-    }
-}
-
-static void handleAttachedInput(program &p, const char *buf, ssize_t n) {
-    const char *key = static_cast<const char *>(memchr(buf, DETACH_KEY, n));
-    ssize_t len = key ? key - buf : n;
-    if (len > 0)
-        write(p.master_fd, buf, len);
-    if (key) {
-        reply(p.attached_client, std::string(1, DETACH_KEY));
-        p.attached_client = -1;
-    }
-}
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -110,7 +35,6 @@ int main(int argc, char *argv[]) {
     }
     Logger::get().info("Tasmasterd started with pid " + std::to_string(getpid()));
     std::cout << "I am the Daemon/Server !" << std::endl;
-    // configs.printSettings();
     openlog("taskmaster", LOG_PID | LOG_CONS, LOG_DAEMON);
     notifyDiscord("Taskmaster Started");
 
@@ -125,59 +49,19 @@ int main(int argc, char *argv[]) {
     syslog(LOG_WARNING, "This is a warning message");
     syslog(LOG_ERR, "This is an error message");
 
-    // signal to know whats going on with children
-    // When a child dies, the kernel sends SIGCHLD to its parent.
-    struct sigaction sa{};
-    sa.sa_handler = sigchld_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART; // Restart whatever syscall the signal interrupted (Not guaranted)
-    sigaction(SIGCHLD, &sa, nullptr);
-
-    // Ctrl C handler
-    struct sigaction st{};
-    st.sa_handler = stop_handler;
-    sigemptyset(&st.sa_mask);
-    sigaction(SIGINT, &st, nullptr);
-    sigaction(SIGTERM, &st, nullptr);
-
-    struct sigaction sh{};
-    sh.sa_handler = reload_handler;
-    sigemptyset(&sh.sa_mask);
-    sigaction(SIGHUP, &sh, nullptr);
-
-    // Otherwise writing to a vanished client in attached mode would kill the server
-    signal(SIGPIPE, SIG_IGN);
+    setup_signal_handlers();
 
     std::cout << "Server listening on " << SOCK_PATH << std::endl;
 
-    // pollfd list: index 0 is always the listening socket, rest are clients
     std::vector<pollfd> fds;
     fds.push_back({server_fd, POLLIN, 0});
 
-    // Launch All programs of all configs
-    for (auto &[name, cfg] : configs.programs) {
-        if (cfg.shouldAutostart())
-            if (cfg.startAllPrograms() == -1) {
-                cleanup(fds, configs);
-                return EXIT_FAILURE;
-            }
-    }
+    configs.startAllConfigs();
 
     while (true) {
         std::vector<pollfd> pfds = fds;
         std::vector<AttachedClients> attachedClients;
-        for (auto &[name, cfg] : configs.programs) {
-            for (auto &p : cfg.programs) {
-                if (p.master_fd != -1) {
-                    pfds.push_back({p.master_fd, POLLIN, 0});
-                    attachedClients.push_back({&cfg, &p, false});
-                }
-                if (p.err_fd != -1) {
-                    pfds.push_back({p.err_fd, POLLIN, 0});
-                    attachedClients.push_back({&cfg, &p, true});
-                }
-            }
-        }
+        configs.addAttachedFds(pfds, attachedClients);
 
         int ready = poll(pfds.data(), pfds.size(), 1000);
         if (ready < 0) {
@@ -185,21 +69,11 @@ int main(int argc, char *argv[]) {
                 perror("poll");
                 break;
             }
-            ready = 0; // We got interrupted we still do down.
+            ready = 0;
         }
 
-        // Magic function that reads the fds that are attached processes
         if (ready > 0) {
-            for (size_t i = 0; i < fds.size(); ++i)
-                fds[i].revents = pfds[i].revents;
-            for (size_t k = 0; k < attachedClients.size(); ++k)
-                if (pfds[fds.size() + k].revents & (POLLIN | POLLHUP | POLLERR)) {
-                    AttachedClients &w = attachedClients[k];
-                    if (w.isErr)
-                        w.cfg->onErrReadable(*w.p);
-                    else
-                        w.cfg->onMasterReadable(*w.p);
-                }
+            readAttachedClients(fds, pfds, attachedClients);
         }
 
         if (stop_requested)
@@ -235,42 +109,7 @@ int main(int argc, char *argv[]) {
                 std::cout << "Client connected (fd=" << client_fd << ")\n";
             }
         }
-
-        // backward so we can just safely remove
-        for (size_t i = fds.size(); i-- > 1;) {
-            if (!(fds[i].revents & (POLLIN | POLLHUP | POLLERR)))
-                continue;
-
-            int client_fd = fds[i].fd;
-            char buf[256] = {0};
-            ssize_t n = read(client_fd, buf, sizeof(buf) - 1);
-
-            if (n <= 0) {
-                std::cout << "Client disconnected (fd=" << client_fd << ")\n";
-                configs.forgetClient(client_fd);
-                close(client_fd);
-                fds.erase(fds.begin() + i);
-                continue;
-            }
-
-            // input is attached program
-            if (program *ap = configs.findAttached(client_fd)) {
-                handleAttachedInput(*ap, buf, n);
-                continue; // never parsed as a command
-            }
-
-            std::string cmd(buf);
-            int err = handleCommands(client_fd, cmd, configs);
-            if (err == SHUTDOWN) {
-                cleanup(fds, configs);
-                return 0;
-            } else if (err == CLIENT_DISCONNECT) {
-                std::cout << "Client disconnected (fd=" << client_fd << ")\n";
-                configs.forgetClient(client_fd);
-                close(client_fd);
-                fds.erase(fds.begin() + i);
-            }
-        }
+        readClientInputs(fds, configs);
     }
 
     cleanup(fds, configs);

@@ -21,6 +21,8 @@ SRCS_DAEMON	=	$(SRCS_DIR)/daemon/main.cpp \
 				$(SRCS_DIR)/daemon/ServerConfig.cpp \
 				$(SRCS_DIR)/daemon/cleanup.cpp \
 				$(SRCS_DIR)/daemon/reload.cpp \
+				$(SRCS_DIR)/daemon/signals.cpp \
+				$(SRCS_DIR)/daemon/handlers.cpp \
 				$(SRCS_DIR)/daemon/commands.cpp
 
 
@@ -43,7 +45,7 @@ RM		=	rm -f
 
 CC_C		=	cc
 
-CFLAGS		=	-Wall -Werror -Wextra -g3 -lreadline -lcurl -lutil
+CFLAGS		=	-Wall -Werror -Wextra -g3 -lreadline -lcurl
 
 INCLUDES	=	-I $(HEADER_DIR) -MMD -MP
 
