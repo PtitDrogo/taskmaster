@@ -519,17 +519,17 @@ void ProgramConfig::onExit(program &p, int status) {
 bool ProgramConfig::areSettingsEqual(const ProgramConfig &a, const ProgramConfig &b) {
     return std::tie(a.name, a.cmd, a.numprocs, a.autostart, a.startsecs, a.autorestart, a.exitcodes, a.startretries,
                     a.stopsignal, a.stopwaitsecs, a.discard_stdout, a.discard_stderr, a.stdout_logfile,
-                    a.stderr_logfile, a.envMap, a.workingdir, a.m_umask) ==
+                    a.stderr_logfile, a.envMap, a.workingdir, a.m_umask, a.user) ==
            std::tie(b.name, b.cmd, b.numprocs, b.autostart, b.startsecs, b.autorestart, b.exitcodes, b.startretries,
                     b.stopsignal, b.stopwaitsecs, b.discard_stdout, b.discard_stderr, b.stdout_logfile,
-                    b.stderr_logfile, b.envMap, b.workingdir, b.m_umask);
+                    b.stderr_logfile, b.envMap, b.workingdir, b.m_umask, b.user);
 }
 
 void ProgramConfig::copySettings(const ProgramConfig &src, ProgramConfig &dest) {
     std::tie(dest.name, dest.cmd, dest.numprocs, dest.autostart, dest.startsecs, dest.autorestart, dest.exitcodes,
              dest.startretries, dest.stopsignal, dest.stopwaitsecs, dest.discard_stdout, dest.discard_stderr,
-             dest.stdout_logfile, dest.stderr_logfile, dest.envMap, dest.workingdir, dest.m_umask) =
+             dest.stdout_logfile, dest.stderr_logfile, dest.envMap, dest.workingdir, dest.m_umask, dest.user) =
         std::tie(src.name, src.cmd, src.numprocs, src.autostart, src.startsecs, src.autorestart, src.exitcodes,
                  src.startretries, src.stopsignal, src.stopwaitsecs, src.discard_stdout, src.discard_stderr,
-                 src.stdout_logfile, src.stderr_logfile, src.envMap, src.workingdir, src.m_umask);
+                 src.stdout_logfile, src.stderr_logfile, src.envMap, src.workingdir, src.m_umask, src.user);
 }

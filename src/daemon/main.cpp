@@ -104,11 +104,11 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     Logger::get().writePid(configs.server.getPidFile());
-    if(Logger::get().open(configs.server.getLogFile()) < 0 &&
-        Logger::get().writePid(configs.server.getPidFile()) < 0){
+    if (Logger::get().open(configs.server.getLogFile()) < 0 &&
+        Logger::get().writePid(configs.server.getPidFile()) < 0) {
         return errno;
     }
-    Logger::get().info("Tasmasterd started with pid " +  std::to_string(getpid()));
+    Logger::get().info("Tasmasterd started with pid " + std::to_string(getpid()));
     std::cout << "I am the Daemon/Server !" << std::endl;
     // configs.printSettings();
     openlog("taskmaster", LOG_PID | LOG_CONS, LOG_DAEMON);
@@ -206,6 +206,7 @@ int main(int argc, char *argv[]) {
             break;
 
         if (reload_requested) {
+            reload_requested = 0;
             handleReload(-1, configs);
         }
 
@@ -220,6 +221,8 @@ int main(int argc, char *argv[]) {
                 cfg.tick(p, now);
         for (auto &[name, cfg] : configs.programs)
             cfg.reapExiled();
+
+        configs.reapExiledConfigs();
 
         if (ready == 0)
             continue;

@@ -67,7 +67,6 @@ class ProgramConfig {
     mode_t m_umask = 022; // Octal value, this is about setting the files perimission this program will create.
     std::string user;
 
-
     // runtime
     bool m_exiled_program = false; // mtg reference, stronger than destroy, since it wont show in logs.
     int fdout = 0;
@@ -93,7 +92,7 @@ class ProgramConfig {
     std::string getName() { return name; }
     void setName(std::string newName) { name = newName; }
     void setProgramName(program &p);
-    void setProgramToExile() { m_exiled_program = true; }
+    void setConfigToExile() { m_exiled_program = true; }
     bool isExiled() const { return m_exiled_program; }
     bool getAutoStart() const { return autostart; }
 
