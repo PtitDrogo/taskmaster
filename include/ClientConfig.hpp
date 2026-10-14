@@ -8,7 +8,7 @@ class ClientConfig {
     std::string serverurl;
     std::string username;
     std::string password;
-    std::string prompt = "supervisor"; // idk what that is actually.
+    std::string prompt = "supervisor";
 
   public:
     ClientConfig(/* args */);

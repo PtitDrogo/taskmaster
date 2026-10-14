@@ -40,17 +40,43 @@ struct Configs {
         return {nullptr, nullptr};
     }
 
-    void forgetClient(int fd) {
+    std::pair<ProgramConfig *, program *> findByProgramName(const std::string &name) {
+        for (auto &config : programs) {
+            for (auto &prog : config.second.programs) {
+                if (prog.name == name) {
+                    return {&config.second, &prog};
+                }
+            }
+        }
+        return {nullptr, nullptr};
+    }
+
+    program *findAttached(int client_fd) {
         for (auto &[name, cfg] : programs)
             for (auto &p : cfg.programs)
+                if (p.attached_client == client_fd)
+                    return &p;
+        return nullptr;
+    }
+
+    void forgetClient(int fd) {
+        for (auto &[name, cfg] : programs)
+            for (auto &p : cfg.programs) {
                 if (p.waiting_client == fd)
                     p.waiting_client = -1;
+                if (p.attached_client == fd)
+                    p.attached_client = -1; // new
+            }
     }
 
     void setConfigPath(std::string path) { server.setConfigPath(path); }
 };
 
-
+struct AttachedClients {
+    ProgramConfig *cfg;
+    program *p;
+    bool isErr;
+};
 
 
 int handleCommands(int client_fd, std::string fullCmd, Configs &configs);

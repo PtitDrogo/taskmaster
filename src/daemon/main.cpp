@@ -76,6 +76,17 @@ void handleDeadProcesses(Configs &configs) {
     }
 }
 
+static void handleAttachedInput(program &p, const char *buf, ssize_t n) {
+    const char *key = static_cast<const char *>(memchr(buf, DETACH_KEY, n));
+    ssize_t len = key ? key - buf : n;
+    if (len > 0)
+        write(p.master_fd, buf, len);
+    if (key) {
+        reply(p.attached_client, std::string(1, DETACH_KEY));
+        p.attached_client = -1;
+    }
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         std::cerr << "Error: argument expected" << std::endl;
@@ -134,6 +145,9 @@ int main(int argc, char *argv[]) {
     sigemptyset(&sh.sa_mask);
     sigaction(SIGHUP, &sh, nullptr);
 
+    // Otherwise writing to a vanished client in attached mode would kill the server
+    signal(SIGPIPE, SIG_IGN);
+
     std::cout << "Server listening on " << SOCK_PATH << std::endl;
 
     // pollfd list: index 0 is always the listening socket, rest are clients
@@ -150,13 +164,42 @@ int main(int argc, char *argv[]) {
     }
 
     while (true) {
-        int ready = poll(fds.data(), fds.size(), 1000);
+        std::vector<pollfd> pfds = fds;
+        std::vector<AttachedClients> attachedClients;
+        for (auto &[name, cfg] : configs.programs) {
+            for (auto &p : cfg.programs) {
+                if (p.master_fd != -1) {
+                    pfds.push_back({p.master_fd, POLLIN, 0});
+                    attachedClients.push_back({&cfg, &p, false});
+                }
+                if (p.err_fd != -1) {
+                    pfds.push_back({p.err_fd, POLLIN, 0});
+                    attachedClients.push_back({&cfg, &p, true});
+                }
+            }
+        }
+
+        int ready = poll(pfds.data(), pfds.size(), 1000);
         if (ready < 0) {
             if (errno != EINTR) {
                 perror("poll");
                 break;
             }
             ready = 0; // We got interrupted we still do down.
+        }
+
+        // Magic function that reads the fds that are attached processes
+        if (ready > 0) {
+            for (size_t i = 0; i < fds.size(); ++i)
+                fds[i].revents = pfds[i].revents;
+            for (size_t k = 0; k < attachedClients.size(); ++k)
+                if (pfds[fds.size() + k].revents & (POLLIN | POLLHUP | POLLERR)) {
+                    AttachedClients &w = attachedClients[k];
+                    if (w.isErr)
+                        w.cfg->onErrReadable(*w.p);
+                    else
+                        w.cfg->onMasterReadable(*w.p);
+                }
         }
 
         if (stop_requested)
@@ -175,6 +218,8 @@ int main(int argc, char *argv[]) {
         for (auto &[name, cfg] : configs.programs)
             for (auto &p : cfg.programs)
                 cfg.tick(p, now);
+        for (auto &[name, cfg] : configs.programs)
+            cfg.reapExiled();
 
         if (ready == 0)
             continue;
@@ -203,6 +248,12 @@ int main(int argc, char *argv[]) {
                 close(client_fd);
                 fds.erase(fds.begin() + i);
                 continue;
+            }
+
+            // input is attached program
+            if (program *ap = configs.findAttached(client_fd)) {
+                handleAttachedInput(*ap, buf, n);
+                continue; // never parsed as a command
             }
 
             std::string cmd(buf);
