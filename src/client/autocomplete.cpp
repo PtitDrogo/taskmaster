@@ -2,7 +2,7 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
-const char *commands[] = {"status", "start", "stop", "restart", "reload", "shutdown", "help", nullptr};
+const char *commands[] = {"status", "start", "stop", "restart", "reload", "shutdown", "help", "attach", nullptr};
 
 static char *command_generator(const char *text, int state) {
     static int index;

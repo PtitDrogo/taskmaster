@@ -53,6 +53,7 @@ static void handleModifiedPrograms(Configs &configs, const Configs &newConfigs) 
         for (auto &program : oldConfig.programs) {
             oldConfig.requestStop(program, -1);
             if (oldConfig.getAutoStart()) {
+                oldConfig.scaleToNumprocs();
                 program.restarting = true;
             }
         }

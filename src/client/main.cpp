@@ -51,6 +51,10 @@ int main(int argc, char *argv[]) {
             std::cout << HELP_STRING << std::endl;
         } else if (!input.empty()) {
             reply(fd, input);
+            if (input.rfind("attach", 0) == 0) {
+                attachSession(fd);
+                continue;
+            }
             std::cout << "Sending: " << input.c_str() << std::endl;
             readResponseAndPrint(fd);
         }
