@@ -99,6 +99,10 @@ void ProgramConfig::fillEnvp() {
 
 char **ProgramConfig::getEnvp() { return this->envptr.data(); }
 
+int ProgramConfig::getStartSecs() const{
+    return this->startsecs;
+}
+
 int ProgramConfig::parseSetting(const std::string &setting, const std::string &value) {
     try {
         if (setting == "command") {
@@ -172,11 +176,11 @@ void ProgramConfig::redirectFiles() {
     }
     close(devnull);
 
-    if (dup2(fdout, STDOUT_FILENO) < 0) {
+    if (dup2(this->fdout, STDOUT_FILENO) < 0) {
         perror("dup2");
         exit(1);
     }
-    if (dup2(fderr, STDERR_FILENO) < 0) {
+    if (dup2(this->fderr, STDERR_FILENO) < 0) {
         perror("dup2");
         exit(1);
     }
@@ -207,9 +211,6 @@ int ProgramConfig::openRedirection() {
     this->fderr = err;
     return 0;
 }
-
-// restart program dont change
-// reload and stop program create new files
 
 void ProgramConfig::removeOlderLogFile(const std::string &identifier) {
     const fs::path directory = "/tmp";
@@ -251,9 +252,6 @@ int ProgramConfig::generateRandomFile(const std::string &identifier) {
     return fd;
 }
 
-// deux choses a regler
-// supprimer le fichier dans le repertoire si il en existe un du meme type
-// Rajouter le singleton pour avoir le fd de log
 
 int ProgramConfig::openLog(const std::string &path, const std::string &identifier) {
     if (path == "AUTO" || path.empty())
@@ -316,11 +314,11 @@ void ProgramConfig::startProgram(program &p) {
         setpgid(pid, pid); // Le parent fout l'enfant dans le groupe de son PID
         // On fait les deux pour une histoire de race condition.
         
-        Logger::get().info("spawned: '" + this->name + "' with pid " + std::to_string(pid));
         // Were updating the program object passed in
         // We do this so that when we restart a program, we use the same object.
         p.pid = pid;
-        p.state = State::Starting;
+        // p.state = State::Starting;
+        this->setState(State::Starting, p);
         p.start_time = time(nullptr);
         p.killing = false;
     }
@@ -330,6 +328,7 @@ bool ProgramConfig::requestStop(program &p, int client_fd) {
     notifyDiscord("Process PID: " + std::to_string(p.pid) + "is stopping");
     if (p.state == State::Backoff) {
         p.state = State::Stopped;
+        std::cout << "je suis dans l'aute killing" << std::endl;
         return true;
     }
     if (p.state != State::Running && p.state != State::Starting)
@@ -346,7 +345,8 @@ void ProgramConfig::tick(program &p, time_t now) {
     switch (p.state) {
     case State::Starting:
         if (now - p.start_time >= startsecs) { // survived long enough
-            p.state = State::Running;
+            // p.state = State::Running;
+            this->setState(State::Running, p);
             p.curr_retries = 0;
         }
         break;
@@ -364,11 +364,14 @@ void ProgramConfig::tick(program &p, time_t now) {
 }
 
 void ProgramConfig::onExit(program &p, int status) {
-    std::cout << "Program with PID" << p.pid << "Just ended" << std::endl;
-
+    p.exitcode = WEXITSTATUS(status);
+    std::cout << "the exit code is " << p.exitcode << std::endl;
     // we Asked for it
     if (p.killing) {
-        p.state = State::Stopped;
+        // p.state = State::Stopped;
+        bool stopstate = WIFSIGNALED(status);
+        p.exitsig = stopstate ? WTERMSIG(status) : -1;
+        this->setState(State::Stopped, p);
         p.killing = false;
         // We want it to restart, this could be because of the restart command
         // or because we reloaded and it has the autoStart Feature.
@@ -381,21 +384,32 @@ void ProgramConfig::onExit(program &p, int status) {
     time_t now = time(nullptr);
     bool diedTooEarly = p.state == State::Starting && now - p.start_time <= startsecs;
     if (diedTooEarly) {
+        
+        this->setState(State::Exited, p);
         // died too early: failed start
         if (++p.curr_retries > startretries) {
-            p.state = State::Fatal;
+            // p.state = State::Fatal;
+            std::cout << "je suis dans le fatal" << std::endl;
+            this->setState(State::Fatal, p);
         } else {
+            std::cout << "je suis dans le backoff" << std::endl;
             p.state = State::Backoff;
             int delay = p.curr_retries * 2;
             p.backoff_until = now + delay;
         }
         return;
     }
-    p.state = State::Exited;
+    // p.state = State::Exited;
+    this->setState(State::Exited, p);
     bool returnCodeIsInList = std::find(exitcodes.begin(), exitcodes.end(), WEXITSTATUS(status)) != exitcodes.end();
     bool diedNormally = WIFEXITED(status) && returnCodeIsInList;
     if (autorestart == AutoRestart::Always || (autorestart == AutoRestart::Unexpected && !diedNormally))
         startProgram(p);
+}
+
+void ProgramConfig::setState(State state, program &p){
+    p.state = state;
+    Logger::get().printState(state, p, *this);
 }
 
 // This could be done automatically with c++ 20 and better class organization, oh well !

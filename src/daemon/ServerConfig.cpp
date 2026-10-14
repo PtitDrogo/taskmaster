@@ -22,12 +22,15 @@ int ServerConfig::parseSetting(const std::string &setting, const std::string &va
         user = value;
     } else if (setting == "logfile") {
         logfile = value;
+    } else if (setting == "pidfile") {
+        pidfile = value;
     } else {
         std::cerr << "Unknown setting: " << setting << " in [supervisord]\n";
-        return 0;
+        return 1;
     }
 
     return 1;
+    // return 0;
 }
 
 int ServerConfig::startDaemonServer() {

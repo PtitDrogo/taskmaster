@@ -19,6 +19,8 @@ enum class State { Stopped, Starting, Running, Backoff, Stopping, Exited, Fatal 
 
 struct program {
     pid_t pid = -1;
+    int exitcode = -1;
+    int exitsig = -1;
     State state = State::Starting;
     time_t start_time = 0;
     int curr_retries = 0; // failed starts in a row
@@ -47,7 +49,7 @@ class ProgramConfig {
     enum class AutoRestart { Always, Never, Unexpected } autorestart = AutoRestart::Unexpected;
     std::vector<int> exitcodes = {0};
     int startretries = 3;
-    int stopsignal = SIGINT;
+    int stopsignal = SIGTERM;
     int stoptime = 10;
     bool discard_stdout = false, discard_stderr = false;
     std::string stdout_logfile = "", stderr_logfile = "";
@@ -76,12 +78,18 @@ class ProgramConfig {
     void tick(program &p, time_t now);
     void onExit(program &p, int status);
     int parseSignals(std::string signal);
+    void setState(State state, program &p);
 
-    std::string getName() { return name; }
+    //getter
+    std::string getName() const { return name; }
+    bool getAutoStart() const { return autostart; }
+    int getStartSecs() const;
+    char **getEnvp();
+
+    //setter
     void setName(std::string newName) { name = newName; }
     void setProgramToExile() { m_exiled_program = true; }
     bool isExiled() const { return m_exiled_program; }
-    bool getAutoStart() const { return autostart; }
 
     static bool areSettingsEqual(const ProgramConfig &a, const ProgramConfig &b);
     static void copySettings(const ProgramConfig &src, ProgramConfig &dest);
@@ -89,7 +97,6 @@ class ProgramConfig {
     // environment
     int addEnvironnement(const std::string &value);
     void fillEnvp();
-    char **getEnvp();
 
     // redirection
     int openLog(const std::string &path, const std::string &identifier);

@@ -92,8 +92,8 @@ int main(int argc, char *argv[]) {
         std::cerr << "Parse error on line " << result << "\n";
         return 1;
     }
-    Logger::get().writePid(configs.server.getPidFile());
-    if(Logger::get().open(configs.server.getLogFile()) < 0 &&
+    // Logger::get().writePid(configs.server.getPidFile());
+    if(Logger::get().open(configs.server.getLogFile()) < 0 ||
         Logger::get().writePid(configs.server.getPidFile()) < 0){
         return errno;
     }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ProgramConfig.hpp"
 #include <iostream>
 #define SOCK_PATH "/tmp/supervisor.sock"
 
@@ -46,6 +47,7 @@ public:
     void warn (const std::string& m) { log(WARN,  m); }
     void error(const std::string& m) { log(ERROR, m); }
     void crit (const std::string& m) { log(CRIT,  m); }
+    void printState(State state, program p, ProgramConfig cfg);
 
 private:
     Logger() = default;

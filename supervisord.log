@@ -1,16 +1,8 @@
-2026-10-12 18:04:41,636 INFO RPC interface 'supervisor' initialized
-2026-10-12 18:04:41,636 CRIT Server 'unix_http_server' running without any HTTP authentication checking
-2026-10-12 18:04:41,638 INFO daemonizing the supervisord process
-2026-10-12 18:04:41,639 INFO supervisord started with pid 81208
-2026-10-12 18:04:42,644 INFO spawned: 'crasher' with pid 81278
-2026-10-12 18:04:42,651 INFO spawned: 'sleeper' with pid 81279
-2026-10-12 18:04:43,670 INFO success: sleeper entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2026-10-12 18:04:43,671 WARN exited: crasher (exit status 1; not expected)
-2026-10-12 18:04:44,677 INFO spawned: 'crasher' with pid 81293
-2026-10-12 18:04:45,697 WARN exited: crasher (exit status 1; not expected)
-2026-10-12 18:04:46,677 INFO gave up: crasher entered FATAL state, too many start retries too quickly
-2026-10-12 18:05:13,726 INFO spawned: 'crasher' with pid 81433
-2026-10-12 18:05:14,742 WARN exited: crasher (exit status 1; not expected)
-2026-10-12 18:05:15,748 INFO spawned: 'crasher' with pid 81452
-2026-10-12 18:05:16,772 WARN exited: crasher (exit status 1; not expected)
-2026-10-12 18:05:17,774 INFO gave up: crasher entered FATAL state, too many start retries too quickly
+2026-10-14 11:34:50,298 INFO RPC interface 'supervisor' initialized
+2026-10-14 11:34:50,298 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2026-10-14 11:34:50,299 INFO daemonizing the supervisord process
+2026-10-14 11:34:50,301 INFO supervisord started with pid 13641
+2026-10-14 11:34:51,304 INFO spawnerr: can't find command '/does/not/exist'
+2026-10-14 11:34:52,306 INFO spawnerr: can't find command '/does/not/exist'
+2026-10-14 11:34:54,316 INFO spawnerr: can't find command '/does/not/exist'
+2026-10-14 11:34:54,316 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly

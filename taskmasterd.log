@@ -1,9 +1,8 @@
-2026-10-12 18:02:18,757 INFO Tasmasterd started with pid 80756
-2026-10-12 18:28:01,587 INFO Tasmasterd started with pid 86562
-2026-10-12 18:28:01,591 INFO spawned: 'crasher' with pid 86563
-2026-10-12 18:28:01,592 INFO spawned: 'sleeper' with pid 86564
-2026-10-12 18:28:04,598 INFO spawned: 'crasher' with pid 86574
-2026-10-12 18:28:25,357 INFO Tasmasterd started with pid 86687
-2026-10-12 18:28:25,358 INFO spawned: 'crasher' with pid 86688
-2026-10-12 18:28:25,360 INFO spawned: 'sleeper' with pid 86689
-2026-10-12 18:28:28,365 INFO spawned: 'crasher' with pid 86704
+2026-10-14 14:36:27,565 INFO Tasmasterd started with pid 12575
+2026-10-14 14:36:27,573 INFO spawned: 'noname' with pid 12576
+2026-10-14 14:36:27,574 WARN exited: noname (exit status 127; not expected)
+2026-10-14 14:36:29,582 INFO spawned: 'noname' with pid 12599
+2026-10-14 14:36:29,583 WARN exited: noname (exit status 127; not expected)
+2026-10-14 14:36:33,590 INFO spawned: 'noname' with pid 12715
+2026-10-14 14:36:33,594 WARN exited: noname (exit status 127; not expected)
+2026-10-14 14:36:33,594 INFO gave up: nonname entered FATAL state, too many start retries too quickly
