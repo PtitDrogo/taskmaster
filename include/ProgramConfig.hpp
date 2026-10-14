@@ -36,6 +36,13 @@ struct program {
     int attached_client = -1;
     std::string scrollback;
     bool exiled = false;
+
+    void print() {
+        std::cout << std::boolalpha << "program{pid=" << pid << " state=" << static_cast<int>(state)
+                  << " start_time=" << start_time << " curr_retries=" << curr_retries
+                  << " backoff_until=" << backoff_until << " killing=" << killing << " kill_deadline=" << kill_deadline
+                  << " waiting_client=" << waiting_client << " restarting=" << restarting << "}\n";
+    }
 };
 
 // This hold the config of every created program.
@@ -58,6 +65,8 @@ class ProgramConfig {
     std::vector<char *> envptr;
     std::string workingdir = "";
     mode_t m_umask = 022; // Octal value, this is about setting the files perimission this program will create.
+    std::string user;
+
 
     // runtime
     bool m_exiled_program = false; // mtg reference, stronger than destroy, since it wont show in logs.
@@ -110,3 +119,5 @@ class ProgramConfig {
 
     void reapExiled();
 };
+
+int dropPrivilegesProgram(const std::string &user);

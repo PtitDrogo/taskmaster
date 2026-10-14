@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include <pty.h>
 #include <sys/stat.h>
+#include "ServerConfig.hpp"
 #include <unordered_map>
 
 void ProgramConfig::printSettings() const {
@@ -106,6 +107,8 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             cmd = value;
         } else if (setting == "autostart") {
             autostart = (value == "true");
+        } else if (setting == "user") {
+            user = value;
         } else if (setting == "numprocs") {
             numprocs = std::stoi(value);
         } else if (setting == "startsecs") {
@@ -355,14 +358,19 @@ void ProgramConfig::startProgram(program &p) {
     }
     if (pid == 0) {
         dup2(errp[1], STDERR_FILENO); // fd 2 now goes to the pipe, not the pty
-        if (!workingdir.empty() && chdir(workingdir.c_str()) == -1)
+        if (dropPrivilegesProgram(this->user) == -1) {
             _exit(127);
+        }
+        if (!this->workingdir.empty() && chdir(this->workingdir.c_str()) == -1) {
+            perror("chdir failed");
+            _exit(127);
+        }
         ::umask(m_umask);
         char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)cmd.data(), nullptr};
         execve("/bin/sh", argv, getEnvp());
         _exit(127);
     }
-
+    Logger::get().info("spawned: '" + this->name + "' with pid " + std::to_string(pid));
     close(errp[1]); // parent only keeps the read end
     p.err_fd = errp[0];
     fcntl(p.err_fd, F_SETFL, O_NONBLOCK);
@@ -373,6 +381,7 @@ void ProgramConfig::startProgram(program &p) {
     p.state = State::Starting;
     p.start_time = time(nullptr);
     p.killing = false;
+    
 }
 
 void ProgramConfig::closeMaster(program &p) {
@@ -486,7 +495,7 @@ void ProgramConfig::onExit(program &p, int status) {
         return;
     }
     time_t now = time(nullptr);
-    bool diedTooEarly = p.state == State::Starting && now - p.start_time < startsecs;
+    bool diedTooEarly = p.state == State::Starting && now - p.start_time <= startsecs;
     if (diedTooEarly) {
         // died too early: failed start
         if (++p.curr_retries > startretries) {
