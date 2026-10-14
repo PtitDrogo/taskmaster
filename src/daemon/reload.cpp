@@ -17,7 +17,7 @@ static void handleRemovedPrograms(Configs &configs, const Configs &newConfigs) {
     for (auto &[name, config] : configs.programs) {
         if (newConfigs.programs.count(name))
             continue;
-        config.setProgramToExile();
+        config.setConfigToExile();
         for (auto &program : config.programs)
             config.requestStop(program, -1);
     }
@@ -39,6 +39,7 @@ static int handleNewPrograms(Configs &configs, const Configs &newConfigs) {
     }
     return 1;
 }
+
 static void handleModifiedPrograms(Configs &configs, const Configs &newConfigs) {
     for (const auto &[name, newConfig] : newConfigs.programs) {
         auto it = configs.programs.find(name);
@@ -50,13 +51,20 @@ static void handleModifiedPrograms(Configs &configs, const Configs &newConfigs) 
             continue;
 
         ProgramConfig::copySettings(newConfig, oldConfig);
-        for (auto &program : oldConfig.programs) {
-            oldConfig.requestStop(program, -1);
-            if (oldConfig.getAutoStart()) {
-                oldConfig.scaleToNumprocs();
-                program.restarting = true;
-            }
+
+        const bool autostart = oldConfig.getAutoStart();
+        const size_t n = oldConfig.programs.size(); // snapshot before scaling
+        for (size_t i = 0; i < n; ++i) {
+            program &p = oldConfig.programs[i];
+            if (p.exiled)
+                continue;
+            if (oldConfig.requestStop(p, -1) || p.state == State::Stopping)
+                p.restarting = autostart; // onExit() will restart it
+            else if (autostart)
+                oldConfig.startProgram(p); // wasn't running: start directly
         }
+        if (autostart)
+            oldConfig.scaleToNumprocs(); // after the loop
     }
 }
 

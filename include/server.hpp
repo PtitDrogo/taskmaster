@@ -70,6 +70,26 @@ struct Configs {
     }
 
     void setConfigPath(std::string path) { server.setConfigPath(path); }
+
+    void reapExiledConfigs() {
+        for (auto it = programs.begin(); it != programs.end();) {
+            ProgramConfig &cfg = it->second;
+
+            bool allDead = std::all_of(cfg.programs.begin(), cfg.programs.end(), [](const program &p) {
+                return p.state == State::Stopped || p.state == State::Exited || p.state == State::Fatal;
+            });
+
+            if (cfg.isExiled() && allDead) {
+                for (auto &p : cfg.programs) {
+                    cfg.closeMaster(p);
+                    cfg.closeErr(p);
+                }
+                it = programs.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
 };
 
 struct AttachedClients {
@@ -78,12 +98,10 @@ struct AttachedClients {
     bool isErr;
 };
 
-
 int handleCommands(int client_fd, std::string fullCmd, Configs &configs);
 void cleanup(std::vector<pollfd> &fds, Configs &configs);
 int handleReload(int client_fd, Configs &configs);
 int handler(void *user, const char *section, const char *name, const char *value);
 int handleReload(int client_fd, Configs &configs);
-
 
 int dropPrivilegesServer(const std::string &user);
