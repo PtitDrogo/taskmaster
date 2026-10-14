@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PROGRAM_CONFIG_HPP
+#define PROGRAM_CONFIG_HPP
 
 #include <algorithm>
 #include <csignal>
@@ -9,6 +10,7 @@
 #include <iostream>
 #include <map>
 #include <regex>
+#include <set>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
@@ -72,6 +74,17 @@ class ProgramConfig {
     int fdout = 0;
     int fderr = 0;
 
+    // Parsing
+    std::set<std::string> m_seen;
+    template <typename T> bool setOnce(const std::string &setting, T &field, T value) {
+        if (!m_seen.insert(setting).second) {
+            std::cerr << "Can't set '" << setting << "' twice in [" << name << "]\n";
+            return false;
+        }
+        field = std::move(value);
+        return true;
+    }
+
     bool isNameTaken(std::string name);
 
   public:
@@ -120,3 +133,5 @@ class ProgramConfig {
 };
 
 int dropPrivilegesProgram(const std::string &user);
+
+#endif

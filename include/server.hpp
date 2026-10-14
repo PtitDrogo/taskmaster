@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
 #include <functional>
 #include <iostream>
@@ -15,6 +16,12 @@
 #define SHUTDOWN -2
 #define CLIENT_DISCONNECT -3
 #define ABORTED -4
+
+struct AttachedClients {
+    ProgramConfig *cfg;
+    program *p;
+    bool isErr;
+};
 
 struct Configs {
     ServerConfig server;
@@ -69,6 +76,28 @@ struct Configs {
             }
     }
 
+    void startAllConfigs() {
+        for (auto &[name, cfg] : this->programs) {
+            if (cfg.shouldAutostart())
+                cfg.startAllPrograms();
+        }
+    }
+
+    void addAttachedFds(std::vector<pollfd> &pfds, std::vector<AttachedClients> &attachedClients) {
+        for (auto &[name, cfg] : this->programs) {
+            for (auto &p : cfg.programs) {
+                if (p.master_fd != -1) {
+                    pfds.push_back({p.master_fd, POLLIN, 0});
+                    attachedClients.push_back({&cfg, &p, false});
+                }
+                if (p.err_fd != -1) {
+                    pfds.push_back({p.err_fd, POLLIN, 0});
+                    attachedClients.push_back({&cfg, &p, true});
+                }
+            }
+        }
+    }
+
     void setConfigPath(std::string path) { server.setConfigPath(path); }
 
     void reapExiledConfigs() {
@@ -92,12 +121,6 @@ struct Configs {
     }
 };
 
-struct AttachedClients {
-    ProgramConfig *cfg;
-    program *p;
-    bool isErr;
-};
-
 int handleCommands(int client_fd, std::string fullCmd, Configs &configs);
 void cleanup(std::vector<pollfd> &fds, Configs &configs);
 int handleReload(int client_fd, Configs &configs);
@@ -105,3 +128,5 @@ int handler(void *user, const char *section, const char *name, const char *value
 int handleReload(int client_fd, Configs &configs);
 
 int dropPrivilegesServer(const std::string &user);
+
+#endif

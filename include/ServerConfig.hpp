@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SERVER_CONFIG_HPP
+#define SERVER_CONFIG_HPP
 
 #include <iostream>
 #define SOCK_PATH "/tmp/supervisor.sock"
@@ -57,3 +58,5 @@ private:
     int         fd = -1;
     std::string path;
 };
+
+#endif
