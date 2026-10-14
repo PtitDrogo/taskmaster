@@ -25,7 +25,7 @@ static void killAllPrograms(Configs &configs) {
         time_t now = time(nullptr);
         for (auto &[name, cfg] : configs.programs)
             for (auto &p : cfg.programs)
-                cfg.tick(p, now); // SIGKILL after stoptime
+                cfg.tick(p, now); // SIGKILL after stopwaitsecs
         usleep(50000);
     }
 }
