@@ -143,6 +143,9 @@ static void handleStatusCmd(int client_fd, const Configs &configs) {
             out += "\n";
         }
     }
+    if (out.empty()) {
+        out += "No processes running.\n";
+    }
     reply(client_fd, out);
 }
 
