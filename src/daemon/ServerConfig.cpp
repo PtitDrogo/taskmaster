@@ -44,7 +44,7 @@ int ServerConfig::startDaemonServer() {
         return -1;
     }
 
-    unlink(SOCK_PATH); // remove old socket file if it exists
+    unlink(SOCK_PATH);
 
     sockaddr_un addr{};
     addr.sun_family = AF_UNIX;

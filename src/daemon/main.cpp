@@ -3,6 +3,7 @@
 #include "server.hpp"
 #include "signal.hpp"
 #include "utils.hpp"
+#include <Logger.hpp>
 #include <csignal>
 #include <cstring>
 #include <poll.h>
@@ -28,31 +29,28 @@ int main(int argc, char *argv[]) {
         std::cerr << "Parse error on line " << result << "\n";
         return 1;
     }
-    // Logger::get().writePid(configs.server.getPidFile());
     if (Logger::get().open(configs.server.getLogFile()) < 0 ||
         Logger::get().writePid(configs.server.getPidFile()) < 0) {
         return errno;
     }
-    Logger::get().info("Tasmasterd started with pid " + std::to_string(getpid()));
-    std::cout << "I am the Daemon/Server !" << std::endl;
+
     openlog("taskmaster-prod", LOG_PID | LOG_CONS, LOG_DAEMON);
+    Logger::get().info("Taskmasterd started with pid " + std::to_string(getpid()));
 
     int server_fd = ServerConfig::startDaemonServer();
     if (server_fd == -1)
         return EXIT_FAILURE;
 
-    if (dropPrivilegesServer(configs.server.getUser()) == -1) {
+    if (dropPrivilegesServer(configs.server.getUser()) == -1)
         return EXIT_FAILURE;
-    }
 
     setup_signal_handlers();
-
-    std::cout << "Server listening on " << SOCK_PATH << std::endl;
 
     std::vector<pollfd> fds;
     fds.push_back({server_fd, POLLIN, 0});
 
     configs.startAllConfigs();
+    std::cout << "--- Daemon Started ---" << std::endl;
 
     while (true) {
         std::vector<pollfd> pfds = fds;
@@ -89,6 +87,7 @@ int main(int argc, char *argv[]) {
         for (auto &[name, cfg] : configs.m_configs)
             for (auto &p : cfg.programs)
                 cfg.tick(p, now);
+
         for (auto &[name, cfg] : configs.m_configs)
             cfg.reapExiled();
 
@@ -97,12 +96,10 @@ int main(int argc, char *argv[]) {
         if (ready == 0)
             continue;
 
-        // new client
         if (fds[0].revents & POLLIN) {
             int client_fd = accept(server_fd, nullptr, nullptr);
             if (client_fd >= 0) {
                 fds.push_back({client_fd, POLLIN, 0});
-                std::cout << "Client connected (fd=" << client_fd << ")\n";
             }
         }
         if (!readClientInputs(fds, configs))

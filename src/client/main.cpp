@@ -32,8 +32,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    config.printSettings();
-
     int fd = ClientConfig::startClient();
     if (fd == -1)
         return EXIT_FAILURE;
@@ -55,15 +53,11 @@ int main(int argc, char *argv[]) {
                 attachSession(fd);
                 continue;
             }
-            std::cout << "Sending: " << input.c_str() << std::endl;
             readResponseAndPrint(fd);
         }
     }
     readResponseAndPrint(fd);
-    clear_history(); // This is the clear history for the shell.
+    clear_history();
     close(fd);
     return 0;
 }
-
-
-

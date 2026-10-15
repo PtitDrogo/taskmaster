@@ -56,8 +56,8 @@ int dropPrivilegesServer(const std::string &user) {
 
 int dropPrivilegesProgram(const std::string &user) {
     bool userIsSet = !user.empty();
-    // Program runs with rights of parent.
     if (!userIsSet) {
+        // Program runs with rights of parent.
         return 0;
     }
 

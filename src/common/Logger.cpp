@@ -1,13 +1,6 @@
-#include "ServerConfig.hpp"
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
-#include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
+#include "Logger.hpp"
 #include <sys/syslog.h>
 #include <sys/time.h>
-#include <unistd.h>
 #include <utils.hpp>
 
 Logger &Logger::get() {
@@ -22,7 +15,7 @@ int Logger::open(const std::string &path) {
         ::close(this->fd);
     this->fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
     if (this->fd < 0) {
-        std::cout << "Error:" << path << " " << strerror(errno) << std::endl;
+        std::cerr << "Error:" << path << " " << strerror(errno) << std::endl;
         return -1;
     }
     this->path = path;
@@ -39,13 +32,13 @@ void Logger::close() {
 int Logger::writePid(const std::string &path) {
     int fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_APPEND | O_TRUNC | O_CLOEXEC, 0644);
     if (fd < 0) {
-        std::cout << "Error:" << path << " " << strerror(errno) << std::endl;
+        std::cerr << "Error:" << path << " " << strerror(errno) << std::endl;
         return -1;
     }
     std::string data = std::to_string(getpid()) + "\n";
 
     if (write(fd, data.c_str(), data.size()) < 0) {
-        std::cout << "Error:" << path << " " << strerror(errno) << std::endl;
+        std::cerr << "Error:" << path << " " << strerror(errno) << std::endl;
         return -1;
     }
     return 1;

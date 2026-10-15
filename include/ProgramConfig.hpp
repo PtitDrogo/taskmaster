@@ -1,6 +1,7 @@
 #ifndef PROGRAM_CONFIG_HPP
 #define PROGRAM_CONFIG_HPP
 
+#include "Logger.hpp"
 #include <algorithm>
 #include <csignal>
 #include <cstdlib>
@@ -28,11 +29,11 @@ struct program {
     int exitsig = -1;
     State state = State::Starting;
     time_t start_time = 0;
-    int curr_retries = 0; // failed starts in a row
+    int curr_retries = 0;
     time_t backoff_until = 0;
     bool killing = false; // a stop was requested
     time_t kill_deadline = 0;
-    int waiting_client = -1; // Technically this should be a vector of clients.
+    int waiting_client = -1; // for matt-daemon, make this a vector.
     bool restarting = false;
     bool spawn_failed = false;
 
@@ -50,12 +51,11 @@ struct program {
     }
 };
 
-// This hold the config of every created program.
 class ProgramConfig {
   private:
     std::string name;
     std::string cmd;
-    int numprocs = 1; // How many process it should make
+    int numprocs = 1;
     bool autostart = true;
     int startsecs = 1;
     enum class AutoRestart { Always, Never, Unexpected } autorestart = AutoRestart::Unexpected;
@@ -70,11 +70,11 @@ class ProgramConfig {
     std::vector<std::string> env;
     std::vector<char *> envptr;
     std::string workingdir = "";
-    mode_t m_umask = 022; // Octal value, this is about setting the files perimission this program will create.
+    mode_t m_umask = 022; // Octal value
     std::string user;
 
     // runtime
-    bool m_exiled_program = false; // mtg reference, stronger than destroy, since it wont show in logs.
+    bool m_exiled_program = false; // mtg reference, marked for complete destruction, not just "stopped"
     int fdout = 0;
     int fderr = 0;
 
@@ -107,13 +107,13 @@ class ProgramConfig {
     int parseSignals(std::string signal);
     void setState(State state, program &p);
 
-    //getter
+    // getter
     std::string getName() const { return name; }
     bool getAutoStart() const { return autostart; }
     int getStartSecs() const;
     char **getEnvp();
 
-    //setter
+    // setter
     void setName(std::string newName) { name = newName; }
     void setProgramName(program &p);
     void setConfigToExile() { m_exiled_program = true; }

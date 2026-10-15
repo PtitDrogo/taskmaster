@@ -9,11 +9,14 @@ std::string getEnv(const char *name, const std::string &fallback = "") {
 }
 
 bool notifyDiscord(const std::string &message) {
-    // Escape quotes/backslashes/newlines for JSON
     std::string webhook_url = getEnv("DISCORD_WEBHOOK");
     std::string esc;
     if (webhook_url.empty()) {
-        // std::cout << "You didnt't set the discord webhook token" << std::endl;
+        static bool warned = false;
+        if (!warned) {
+            std::cerr << "You didn't set the Discord webhook\n";
+            warned = true;
+        }
         return false;
     }
     for (char c : message) {
@@ -44,7 +47,7 @@ bool notifyDiscord(const std::string &message) {
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
-    
+
     // This does a cheeky allocation since its a getaddrinfo.
     CURLcode res = curl_easy_perform(curl);
 
