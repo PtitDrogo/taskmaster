@@ -41,6 +41,8 @@ static void handleModifiedPrograms(Configs &configs, const Configs &newConfigs) 
 
         const bool autostart = oldConfig.getAutoStart();
         const size_t n = oldConfig.programs.size();
+
+        oldConfig.openRedirection();
         for (size_t i = 0; i < n; ++i) {
             program &p = oldConfig.programs[i];
             if (p.exiled)
