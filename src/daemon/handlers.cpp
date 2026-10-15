@@ -69,7 +69,7 @@ void handleAttachedInput(program &p, const char *buf, ssize_t n) {
     }
 }
 
-void readClientInputs(std::vector<pollfd> &fds, Configs &configs) {
+int readClientInputs(std::vector<pollfd> &fds, Configs &configs) {
     for (size_t i = fds.size(); i-- > 1;) {
         if (!(fds[i].revents & (POLLIN | POLLHUP | POLLERR)))
             continue;
@@ -96,7 +96,7 @@ void readClientInputs(std::vector<pollfd> &fds, Configs &configs) {
         int err = handleCommands(client_fd, cmd, configs);
         if (err == SHUTDOWN) {
             cleanup(fds, configs);
-            exit(EXIT_SUCCESS);
+            return 0;
         } else if (err == CLIENT_DISCONNECT) {
             std::cout << "Client disconnected (fd=" << client_fd << ")\n";
             configs.forgetClient(client_fd);
@@ -104,4 +104,5 @@ void readClientInputs(std::vector<pollfd> &fds, Configs &configs) {
             fds.erase(fds.begin() + i);
         }
     }
+    return 1;
 }

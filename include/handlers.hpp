@@ -12,6 +12,6 @@ void handleDeadProcesses(Configs &configs);
 void readAttachedClients(std::vector<pollfd> &fds, std::vector<pollfd> &pfds,
                          std::vector<AttachedClients> &attachedClients);
 void handleAttachedInput(program &p, const char *buf, ssize_t n);
-void readClientInputs(std::vector<pollfd> &fds, Configs &configs);
+int readClientInputs(std::vector<pollfd> &fds, Configs &configs);
 
 #endif

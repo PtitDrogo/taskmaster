@@ -29,8 +29,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     // Logger::get().writePid(configs.server.getPidFile());
-    if(Logger::get().open(configs.server.getLogFile()) < 0 ||
-        Logger::get().writePid(configs.server.getPidFile()) < 0){
+    if (Logger::get().open(configs.server.getLogFile()) < 0 ||
+        Logger::get().writePid(configs.server.getPidFile()) < 0) {
         return errno;
     }
     Logger::get().info("Tasmasterd started with pid " + std::to_string(getpid()));
@@ -109,7 +109,8 @@ int main(int argc, char *argv[]) {
                 std::cout << "Client connected (fd=" << client_fd << ")\n";
             }
         }
-        readClientInputs(fds, configs);
+        if (!readClientInputs(fds, configs))
+            return 1;
     }
 
     cleanup(fds, configs);

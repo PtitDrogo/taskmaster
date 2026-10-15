@@ -1,0 +1,11 @@
+2026-10-15 12:59:53,011 INFO Tasmasterd started with pid 5729
+2026-10-15 12:59:53,468 INFO spawnerr: 'fatal_nocmd': No such file or directory
+2026-10-15 12:59:54,478 INFO spawnerr: 'fatal_nocmd': No such file or directory
+2026-10-15 12:59:56,485 INFO spawnerr: 'fatal_nocmd': No such file or directory
+2026-10-15 12:59:56,486 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 13:01:26,924 INFO spawnerr: 'fatal_nocmd': No such file or directory
+2026-10-15 13:01:26,925 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 13:01:35,961 INFO spawnerr: 'fatal_nocmd': No such file or directory
+2026-10-15 13:01:36,965 INFO spawnerr: 'fatal_nocmd': No such file or directory
+2026-10-15 13:01:38,975 INFO spawnerr: 'fatal_nocmd': No such file or directory
+2026-10-15 13:01:38,976 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
