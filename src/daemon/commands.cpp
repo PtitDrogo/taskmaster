@@ -126,7 +126,7 @@ static void handleStatusCmd(int client_fd, const Configs &configs) {
     std::string out;
     time_t now = time(nullptr);
 
-    for (const auto &[name, cfg] : configs.programs) {
+    for (const auto &[name, cfg] : configs.m_configs) {
         if (cfg.isExiled()) {
             continue;
         }

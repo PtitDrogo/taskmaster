@@ -25,11 +25,11 @@ struct AttachedClients {
 
 struct Configs {
     ServerConfig server;
-    std::map<std::string, ProgramConfig> programs;
+    std::map<std::string, ProgramConfig> m_configs;
 
     void printSettings() const {
         server.printSettings();
-        for (auto &[section, cfg] : programs) {
+        for (auto &[section, cfg] : m_configs) {
             std::cout << "Section: " << section << "\n";
             cfg.printSettings();
         }
@@ -38,7 +38,7 @@ struct Configs {
     std::pair<ProgramConfig *, program *> findByPid(pid_t pid) {
         if (pid <= 0)
             return {nullptr, nullptr};
-        for (auto &[name, config] : programs) {
+        for (auto &[name, config] : m_configs) {
             for (auto &program : config.programs) {
                 if (program.pid == pid)
                     return {&config, &program};
@@ -48,7 +48,7 @@ struct Configs {
     }
 
     std::pair<ProgramConfig *, program *> findByProgramName(const std::string &name) {
-        for (auto &config : programs) {
+        for (auto &config : m_configs) {
             for (auto &prog : config.second.programs) {
                 if (prog.name == name) {
                     return {&config.second, &prog};
@@ -59,7 +59,7 @@ struct Configs {
     }
 
     program *findAttached(int client_fd) {
-        for (auto &[name, cfg] : programs)
+        for (auto &[name, cfg] : m_configs)
             for (auto &p : cfg.programs)
                 if (p.attached_client == client_fd)
                     return &p;
@@ -67,7 +67,7 @@ struct Configs {
     }
 
     void forgetClient(int fd) {
-        for (auto &[name, cfg] : programs)
+        for (auto &[name, cfg] : m_configs)
             for (auto &p : cfg.programs) {
                 if (p.waiting_client == fd)
                     p.waiting_client = -1;
@@ -77,14 +77,14 @@ struct Configs {
     }
 
     void startAllConfigs() {
-        for (auto &[name, cfg] : this->programs) {
+        for (auto &[name, cfg] : this->m_configs) {
             if (cfg.shouldAutostart())
                 cfg.startAllPrograms();
         }
     }
 
     void addAttachedFds(std::vector<pollfd> &pfds, std::vector<AttachedClients> &attachedClients) {
-        for (auto &[name, cfg] : this->programs) {
+        for (auto &[name, cfg] : this->m_configs) {
             for (auto &p : cfg.programs) {
                 if (p.master_fd != -1) {
                     pfds.push_back({p.master_fd, POLLIN, 0});
@@ -101,7 +101,7 @@ struct Configs {
     void setConfigPath(std::string path) { server.setConfigPath(path); }
 
     void reapExiledConfigs() {
-        for (auto it = programs.begin(); it != programs.end();) {
+        for (auto it = m_configs.begin(); it != m_configs.end();) {
             ProgramConfig &cfg = it->second;
 
             bool allDead = std::all_of(cfg.programs.begin(), cfg.programs.end(), [](const program &p) {
@@ -113,7 +113,7 @@ struct Configs {
                     cfg.closeMaster(p);
                     cfg.closeErr(p);
                 }
-                it = programs.erase(it);
+                it = m_configs.erase(it);
             } else {
                 ++it;
             }

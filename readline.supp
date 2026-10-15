@@ -7,17 +7,19 @@
 }
 
 {
-   readline_still_reachable
+   add_history
    Memcheck:Leak
    match-leak-kinds: reachable
    ...
    fun:add_history
 }
 
+# curl_easy_perform leaks, for some reason at some point 
+# the fun name didnt work anymore, so we do this.
 {
    curl
    Memcheck:Leak
    match-leak-kinds: reachable
    ...
-   fun:curl_easy_perform
+   fun:_dl_open
 }

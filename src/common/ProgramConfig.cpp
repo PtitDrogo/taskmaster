@@ -571,7 +571,6 @@ void ProgramConfig::onErrReadable(program &p) {
 }
 
 bool ProgramConfig::requestStop(program &p, int client_fd) {
-    notifyDiscord("Process PID: " + std::to_string(p.pid) + "is stopping");
     if (p.state == State::Backoff) {
         p.state = State::Stopped;
         std::cout << "je suis dans l'aute killing" << std::endl;

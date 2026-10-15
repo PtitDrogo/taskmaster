@@ -2,7 +2,7 @@
 #include "utils.hpp"
 
 static bool anyStopping(Configs &configs) {
-    for (auto &[name, cfg] : configs.programs)
+    for (auto &[name, cfg] : configs.m_configs)
         for (auto &p : cfg.programs)
             if (p.state == State::Stopping)
                 return true;
@@ -10,7 +10,7 @@ static bool anyStopping(Configs &configs) {
 }
 
 static void killAllPrograms(Configs &configs) {
-    for (auto &[name, cfg] : configs.programs)
+    for (auto &[name, cfg] : configs.m_configs)
         for (auto &p : cfg.programs)
             cfg.requestStop(p, -1); // sends stopsignal; ignores programs that aren't running
 
@@ -23,7 +23,7 @@ static void killAllPrograms(Configs &configs) {
                 cfg->onExit(*p, status); // killing=true -> Stopped, no autorestart
         }
         time_t now = time(nullptr);
-        for (auto &[name, cfg] : configs.programs)
+        for (auto &[name, cfg] : configs.m_configs)
             for (auto &p : cfg.programs)
                 cfg.tick(p, now); // SIGKILL after stopwaitsecs
         usleep(50000);

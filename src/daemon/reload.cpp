@@ -14,8 +14,8 @@
 // First we pass the new config and we generate a new Configs object.
 // We set programs in the existing config to be deleted for real.
 static void handleRemovedPrograms(Configs &configs, const Configs &newConfigs) {
-    for (auto &[name, config] : configs.programs) {
-        if (newConfigs.programs.count(name))
+    for (auto &[name, config] : configs.m_configs) {
+        if (newConfigs.m_configs.count(name))
             continue;
         config.setConfigToExile();
         for (auto &program : config.programs)
@@ -25,12 +25,12 @@ static void handleRemovedPrograms(Configs &configs, const Configs &newConfigs) {
 
 static int handleNewPrograms(Configs &configs, const Configs &newConfigs) {
 
-    for (auto &[name, config] : newConfigs.programs) {
-        if (configs.programs.count(name))
+    for (auto &[name, config] : newConfigs.m_configs) {
+        if (configs.m_configs.count(name))
             continue;
 
         // We add new programs to configs and then we start them, simple as
-        auto [it, inserted] = configs.programs.emplace(name, config);
+        auto [it, inserted] = configs.m_configs.emplace(name, config);
         if (inserted && it->second.shouldAutostart()) {
             if (it->second.startAllPrograms() == -1) {
                 return -1;
@@ -41,9 +41,9 @@ static int handleNewPrograms(Configs &configs, const Configs &newConfigs) {
 }
 
 static void handleModifiedPrograms(Configs &configs, const Configs &newConfigs) {
-    for (const auto &[name, newConfig] : newConfigs.programs) {
-        auto it = configs.programs.find(name);
-        if (it == configs.programs.end())
+    for (const auto &[name, newConfig] : newConfigs.m_configs) {
+        auto it = configs.m_configs.find(name);
+        if (it == configs.m_configs.end())
             continue;
 
         ProgramConfig &oldConfig = it->second;

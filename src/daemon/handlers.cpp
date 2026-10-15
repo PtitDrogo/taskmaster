@@ -7,7 +7,7 @@ int handler(void *user, const char *section, const char *name, const char *value
     int err = 1;
     if (sect.rfind("program:", 0) == 0) {
         std::string progname = sect.substr(8);
-        ProgramConfig &pc = cfg->programs[progname];
+        ProgramConfig &pc = cfg->m_configs[progname];
         pc.setName(progname);
         err = pc.parseSetting(setting, val);
     } else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
@@ -37,7 +37,7 @@ void handleDeadProcesses(Configs &configs) {
             if (!othersPending) {
                 reply(fd, p->state == State::Starting ? "restarted\n" : "stopped\n");
                 if (cfg->isExiled()) {
-                    configs.programs.erase(cfg->getName());
+                    configs.m_configs.erase(cfg->getName());
                 }
             }
         }

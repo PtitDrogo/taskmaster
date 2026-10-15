@@ -45,9 +45,9 @@ int main(int argc, char *argv[]) {
     if (dropPrivilegesServer(configs.server.getUser()) == -1) {
         return EXIT_FAILURE;
     }
-    syslog(LOG_INFO, "Supervisor started");
-    syslog(LOG_WARNING, "This is a warning message");
-    syslog(LOG_ERR, "This is an error message");
+    // syslog(LOG_INFO, "Supervisor started");
+    // syslog(LOG_WARNING, "This is a warning message");
+    // syslog(LOG_ERR, "This is an error message");
 
     setup_signal_handlers();
 
@@ -90,10 +90,10 @@ int main(int argc, char *argv[]) {
         }
 
         time_t now = time(nullptr);
-        for (auto &[name, cfg] : configs.programs)
+        for (auto &[name, cfg] : configs.m_configs)
             for (auto &p : cfg.programs)
                 cfg.tick(p, now);
-        for (auto &[name, cfg] : configs.programs)
+        for (auto &[name, cfg] : configs.m_configs)
             cfg.reapExiled();
 
         configs.reapExiledConfigs();
