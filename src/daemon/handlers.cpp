@@ -10,7 +10,7 @@ int handler(void *user, const char *section, const char *name, const char *value
         ProgramConfig &pc = cfg->m_configs[progname];
         pc.setName(progname);
         err = pc.parseSetting(setting, val);
-    } else if (sect == "unix_http_server" || sect == "inet_http_server" || sect == "supervisord") {
+    } else if (sect == "supervisord") {
         err = cfg->server.parseSetting(setting, val);
     }
     return err;
