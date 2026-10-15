@@ -5,8 +5,10 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/syslog.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <utils.hpp>
 
 Logger &Logger::get() {
     static Logger instance;
@@ -65,28 +67,29 @@ const char *Logger::levelName(Level l) {
     return "????";
 }
 
-void Logger::printState(State state, program p, ProgramConfig cfg){
+void Logger::printState(State state, program p, ProgramConfig cfg) {
     switch (state) {
-        case State::Starting:
-            this->log(Level::INFO, "spawned: " + p.name + " with pid " +  std::to_string(p.pid));
-            break;
-        case State::Running:
-            this->log(Level::INFO, "success: " + p.name + " entered RUNNING state, process has stayed up for > than " + std::to_string(cfg.getStartSecs()) + " seconds (startsecs)");
-            break;
-        case State::Stopped:{
-            const char *abbr = sigabbrev_np(p.exitsig);
-            std::string name = abbr ? std::string("SIG") + abbr : "signal " + std::to_string(p.exitsig);
-            this->log(Level::WARN, "stopped: " + p.name +" (terminated by " + name + ")");
-            break;
-        }
-        case State::Exited:
-            this->log(Level::WARN, "exited: " + p.name + " (exit status " + std::to_string(p.exitcode) + "; not expected)");
-            break;
-        case State::Fatal:
-            this->log(Level::INFO, "gave up: " + p.name + " entered FATAL state, too many start retries too quickly");
-            break;    
-        default:
-            break;
+    case State::Starting:
+        this->log(Level::INFO, "spawned: " + p.name + " with pid " + std::to_string(p.pid));
+        break;
+    case State::Running:
+        this->log(Level::INFO, "success: " + p.name + " entered RUNNING state, process has stayed up for > than " +
+                                   std::to_string(cfg.getStartSecs()) + " seconds (startsecs)");
+        break;
+    case State::Stopped: {
+        const char *abbr = sigabbrev_np(p.exitsig);
+        std::string name = abbr ? std::string("SIG") + abbr : "signal " + std::to_string(p.exitsig);
+        this->log(Level::WARN, "stopped: " + p.name + " (terminated by " + name + ")");
+        break;
+    }
+    case State::Exited:
+        this->log(Level::WARN, "exited: " + p.name + " (exit status " + std::to_string(p.exitcode) + "; not expected)");
+        break;
+    case State::Fatal:
+        this->log(Level::INFO, "gave up: " + p.name + " entered FATAL state, too many start retries too quickly");
+        break;
+    default:
+        break;
     }
 }
 
@@ -109,5 +112,18 @@ void Logger::log(Level lvl, const std::string &msg) {
 
     std::string line = timestamp() + " " + levelName(lvl) + " " + msg + "\n";
     ssize_t r = ::write(this->fd, line.c_str(), line.size());
+    advancedLogs(lvl, msg);
+
     (void)r;
+}
+
+void Logger::advancedLogs(Level lvl, const std::string &msg) {
+    if (lvl == Level::ERROR || lvl == Level::CRIT) {
+        notifyDiscord(msg);
+        syslog(LOG_ERR, msg.c_str());
+    }
+    if (lvl == Level::WARN) {
+        notifyDiscord(msg);
+        syslog(LOG_WARNING, msg.c_str());
+    }
 }

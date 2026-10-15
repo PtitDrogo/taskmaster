@@ -48,7 +48,7 @@ int dropPrivilegesServer(const std::string &user) {
     }
 
     if (!userIsSet && isRoot) {
-        std::cout << "WARNING: Running as root, no user specified" << std::endl;
+        Logger::get().log(Logger::WARN, "Running as root, no user specified");
     }
     // if not Root we do nothing its chill.
     return 0;

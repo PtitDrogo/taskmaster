@@ -35,8 +35,7 @@ int main(int argc, char *argv[]) {
     }
     Logger::get().info("Tasmasterd started with pid " + std::to_string(getpid()));
     std::cout << "I am the Daemon/Server !" << std::endl;
-    openlog("taskmaster", LOG_PID | LOG_CONS, LOG_DAEMON);
-    notifyDiscord("Taskmaster Started");
+    openlog("taskmaster-prod", LOG_PID | LOG_CONS, LOG_DAEMON);
 
     int server_fd = ServerConfig::startDaemonServer();
     if (server_fd == -1)
@@ -45,9 +44,6 @@ int main(int argc, char *argv[]) {
     if (dropPrivilegesServer(configs.server.getUser()) == -1) {
         return EXIT_FAILURE;
     }
-    // syslog(LOG_INFO, "Supervisor started");
-    // syslog(LOG_WARNING, "This is a warning message");
-    // syslog(LOG_ERR, "This is an error message");
 
     setup_signal_handlers();
 

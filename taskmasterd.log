@@ -161,3 +161,104 @@
 2026-10-15 14:23:51,637 INFO spawned: 'bash' with pid 27843
 2026-10-15 14:23:51,656 INFO spawnerr: 'fatal_nocmd': No such file or directory
 2026-10-15 14:23:52,123 WARN stopped: bash (terminated by SIGTERM)
+2026-10-15 15:46:33,372 INFO Tasmasterd started with pid 7828
+2026-10-15 15:46:33,382 INFO spawned: 'fatal_nocmd' with pid 7831
+2026-10-15 15:46:33,384 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 15:46:35,390 INFO spawned: 'fatal_nocmd' with pid 7855
+2026-10-15 15:46:35,391 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 15:46:39,406 INFO spawned: 'fatal_nocmd' with pid 7876
+2026-10-15 15:46:39,408 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 15:46:39,408 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 15:47:32,441 INFO Tasmasterd started with pid 8224
+2026-10-15 15:47:32,443 INFO spawned: 'fatal_nocmd' with pid 8225
+2026-10-15 15:47:32,444 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 15:47:34,456 INFO spawned: 'fatal_nocmd' with pid 8246
+2026-10-15 15:47:34,458 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 15:47:38,507 INFO spawned: 'fatal_nocmd' with pid 8332
+2026-10-15 15:47:38,508 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 15:47:38,508 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 15:48:20,907 INFO Tasmasterd started with pid 8644
+2026-10-15 15:48:20,909 INFO spawned: 'fatal_nocmd' with pid 8645
+2026-10-15 15:48:20,910 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 15:48:22,914 INFO spawned: 'fatal_nocmd' with pid 8668
+2026-10-15 15:48:22,916 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 15:48:26,974 INFO spawned: 'fatal_nocmd' with pid 8769
+2026-10-15 15:48:26,976 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 15:48:26,976 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 16:11:13,644 INFO Tasmasterd started with pid 13381
+2026-10-15 16:11:13,645 INFO spawned: 'fatal_nocmd' with pid 13382
+2026-10-15 16:11:13,645 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:11:15,017 INFO spawned: 'fatal_nocmd' with pid 13402
+2026-10-15 16:11:15,018 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:11:19,262 INFO spawned: 'fatal_nocmd' with pid 13428
+2026-10-15 16:11:19,264 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:11:19,554 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 16:11:35,979 INFO spawned: 'fatal_nocmd' with pid 13615
+2026-10-15 16:11:35,981 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:11:36,434 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 16:12:24,261 INFO Tasmasterd started with pid 13933
+2026-10-15 16:12:24,261 WARN Running as root, no user specified
+2026-10-15 16:12:24,262 INFO spawned: 'fatal_nocmd' with pid 13934
+2026-10-15 16:12:24,262 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:12:26,267 INFO spawned: 'fatal_nocmd' with pid 13962
+2026-10-15 16:12:26,268 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:12:30,281 INFO spawned: 'fatal_nocmd' with pid 13997
+2026-10-15 16:12:30,283 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:12:30,283 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 16:13:25,306 INFO Tasmasterd started with pid 14273
+2026-10-15 16:13:25,306 WARN Running as root, no user specified
+2026-10-15 16:13:25,307 INFO spawned: 'fatal_nocmd' with pid 14274
+2026-10-15 16:13:25,308 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:13:27,315 INFO spawned: 'fatal_nocmd' with pid 14304
+2026-10-15 16:13:27,317 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:13:31,327 INFO spawned: 'fatal_nocmd' with pid 14351
+2026-10-15 16:13:31,328 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:13:31,329 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 16:15:08,968 INFO Tasmasterd started with pid 14601
+2026-10-15 16:15:08,968 WARN Running as root, no user specified
+2026-10-15 16:15:08,969 INFO spawned: 'fatal_nocmd' with pid 14602
+2026-10-15 16:15:08,969 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:15:10,977 INFO spawned: 'fatal_nocmd' with pid 14626
+2026-10-15 16:15:10,979 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:15:14,024 INFO spawned: 'fatal_nocmd' with pid 14650
+2026-10-15 16:15:14,025 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:15:14,026 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 16:15:32,870 INFO Tasmasterd started with pid 14839
+2026-10-15 16:15:32,870 WARN Running as root, no user specified
+2026-10-15 16:15:32,871 INFO spawned: 'fatal_nocmd' with pid 14840
+2026-10-15 16:15:32,871 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:15:34,877 INFO spawned: 'fatal_nocmd' with pid 14871
+2026-10-15 16:15:34,879 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:15:38,889 INFO spawned: 'fatal_nocmd' with pid 14901
+2026-10-15 16:15:38,891 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:15:38,891 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 16:16:11,215 INFO Tasmasterd started with pid 15159
+2026-10-15 16:16:11,215 WARN Running as root, no user specified
+2026-10-15 16:16:11,218 INFO spawned: 'fatal_nocmd' with pid 15160
+2026-10-15 16:16:11,219 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:16:13,226 INFO spawned: 'fatal_nocmd' with pid 15195
+2026-10-15 16:16:13,228 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:16:17,245 INFO spawned: 'fatal_nocmd' with pid 15222
+2026-10-15 16:16:17,247 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:16:17,248 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 16:17:54,668 INFO Tasmasterd started with pid 15516
+2026-10-15 16:17:54,668 WARN Running as root, no user specified
+2026-10-15 16:17:54,670 INFO spawned: 'fatal_nocmd' with pid 15517
+2026-10-15 16:17:54,671 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:17:56,676 INFO spawned: 'fatal_nocmd' with pid 15544
+2026-10-15 16:17:56,678 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:18:00,690 INFO spawned: 'fatal_nocmd' with pid 15575
+2026-10-15 16:18:00,691 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:18:00,691 INFO gave up: fatal_nocmd entered FATAL state, too many start retries too quickly
+2026-10-15 16:19:22,048 INFO Tasmasterd started with pid 16001
+2026-10-15 16:19:22,048 WARN Running as root, no user specified
+2026-10-15 16:19:22,049 INFO spawned: 'fatal_nocmd' with pid 16002
+2026-10-15 16:19:22,050 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:19:24,061 INFO spawned: 'fatal_nocmd' with pid 16021
+2026-10-15 16:19:24,061 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:21:18,786 INFO Tasmasterd started with pid 16583
+2026-10-15 16:21:18,786 WARN Running as root, no user specified
+2026-10-15 16:21:18,788 INFO spawned: 'fatal_nocmd' with pid 16584
+2026-10-15 16:21:18,789 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 16:21:20,795 INFO spawned: 'fatal_nocmd' with pid 16617
+2026-10-15 16:21:20,796 WARN exited: fatal_nocmd (exit status 0; not expected)
