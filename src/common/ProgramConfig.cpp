@@ -442,7 +442,9 @@ void ProgramConfig::startProgram(program &p) {
     }
 
     Logger::get().info("spawned: '" + this->name + "' with pid " + std::to_string(pid));
-
+    p.state = State::Starting;
+    p.err_fd = errp[0];
+    
     fcntl(p.err_fd, F_SETFL, O_NONBLOCK);
 
     fcntl(p.master_fd, F_SETFD, FD_CLOEXEC);
