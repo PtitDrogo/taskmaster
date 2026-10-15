@@ -331,20 +331,119 @@ void ProgramConfig::setProgramName(program &p) {
     return;
 }
 
+std::vector<std::string> splitCommand(const std::string &cmd) {
+    enum Quote { NONE, SINGLE, DOUBLE };
+
+    std::vector<std::string> args;
+    std::string cur;
+    bool inToken = false;   // true even for an empty token like ""
+    Quote quote = NONE;
+
+    for (size_t i = 0; i < cmd.size(); ++i) {
+        char c = cmd[i];
+
+        if (quote == SINGLE) {
+            // everything is literal until the closing '
+            if (c == '\'') quote = NONE;
+            else cur += c;
+        }
+        else if (quote == DOUBLE) {
+            if (c == '"') {
+                quote = NONE;
+            } else if (c == '\\' && i + 1 < cmd.size()
+                       && (cmd[i + 1] == '"' || cmd[i + 1] == '\\')) {
+                cur += cmd[++i];        // \" -> "   and   \\ -> \ .
+            } else {
+                cur += c;
+            }
+        }
+        else {
+            if (std::isspace(static_cast<unsigned char>(c))) {
+                if (inToken) {
+                    args.push_back(cur);
+                    cur.clear();
+                    inToken = false;
+                }
+            } else if (c == '\'') {
+                quote = SINGLE;
+                inToken = true;
+            } else if (c == '"') {
+                quote = DOUBLE;
+                inToken = true;
+            } else if (c == '\\') {
+                if (i + 1 >= cmd.size())
+                    throw std::invalid_argument("trailing backslash in command");
+                cur += cmd[++i];
+                inToken = true;
+            } else {
+                cur += c;
+                inToken = true;
+            }
+        }
+    }
+
+    if (quote != NONE)
+        throw std::invalid_argument("unterminated quote in command");
+    if (inToken)
+        args.push_back(cur);
+
+    return args;
+}
+
+std::string resolvePath(const std::string &prog, const char *pathVar) {
+    if (prog.find('/') != std::string::npos)
+        return prog;                          // already a path
+    if (!pathVar) pathVar = "/usr/local/bin:/usr/bin:/bin";
+
+    std::string paths = pathVar;
+    size_t start = 0;
+    while (start <= paths.size()) {
+        size_t end = paths.find(':', start);
+        if (end == std::string::npos) end = paths.size();
+        std::string dir = paths.substr(start, end - start);
+        if (dir.empty()) dir = ".";
+        std::string full = dir + "/" + prog;
+        if (access(full.c_str(), X_OK) == 0)
+            return full;
+        start = end + 1;
+    }
+    return "";                                 // not found
+}
+
 // This always starts a program
 // Logic for not starting a program should be outside of this.
 void ProgramConfig::startProgram(program &p) {
+    std::cout << "command is: " << this->cmd << std::endl;
     setProgramName(p);
     this->fillEnvp();
     this->closeMaster(p);
     this->closeErr(p);
 
     int errp[2];
+    int statusp[2];
     if (pipe2(errp, O_CLOEXEC) == -1) {
         perror("pipe2");
         p.state = State::Fatal;
         return;
     }
+    // pipe for getting the status of the execve
+    if (pipe2(statusp, O_CLOEXEC) == -1) {
+        perror("pipe2");
+        close(errp[0]);
+        close(errp[1]);
+        p.state = State::Fatal;
+        return;
+    }
+
+    //rajout
+    // std::vector<std::string> args = splitCommand(this->cmd);
+    // std::vector<char *> argv;
+    // for (auto &a : args){
+    //     std::cout << a.data() << std::endl;
+    //     argv.push_back(a.data());
+    // }
+    // argv.push_back(nullptr);
+    //fin rajout
 
     pid_t pid = forkpty(&p.master_fd, nullptr, nullptr, nullptr);
     if (pid < 0) {
@@ -355,6 +454,12 @@ void ProgramConfig::startProgram(program &p) {
         return;
     }
     if (pid == 0) {
+        close(statusp[0]);
+        auto fail = [&]() {
+            int e = errno;
+            write(statusp[1], &e, sizeof(e));
+            _exit(127);
+        };
         dup2(errp[1], STDERR_FILENO); // fd 2 now goes to the pipe, not the pty
         if (dropPrivilegesProgram(this->user) == -1) {
             _exit(127);
@@ -365,11 +470,29 @@ void ProgramConfig::startProgram(program &p) {
         }
         ::umask(m_umask);
         char *argv[] = {(char *)"/bin/sh", (char *)"-c", (char *)cmd.data(), nullptr};
-        execve("/bin/sh", argv, getEnvp());
-        _exit(127);
+        execve("/bin/sh", argv, this->getEnvp());
+        perror("test");
+        fail();
+    }
+    close(errp[1]); // parent only keeps the read end
+    close(statusp[1]);
+
+    // case where my program don't start
+    ssize_t n;
+    int child_errno = 0;
+    do { n = read(statusp[0], &child_errno, sizeof(child_errno)); }
+    while (n == -1 && errno == EINTR);
+    close(statusp[0]);
+    
+    if (n > 0) {
+        waitpid(pid, nullptr, 0);     // reap it
+        Logger::get().error("spawnerr: '" + p.name + "': " + strerror(child_errno));
+        // p.state = State::Backoff;       // or Backoff
+        return;
     }
     Logger::get().info("spawned: '" + this->name + "' with pid " + std::to_string(pid));
-    close(errp[1]); // parent only keeps the read end
+    //end of the execve case
+
     p.err_fd = errp[0];
     fcntl(p.err_fd, F_SETFL, O_NONBLOCK);
 
@@ -379,7 +502,6 @@ void ProgramConfig::startProgram(program &p) {
     p.state = State::Starting;
     p.start_time = time(nullptr);
     p.killing = false;
-    
 }
 
 void ProgramConfig::closeMaster(program &p) {

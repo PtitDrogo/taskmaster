@@ -68,22 +68,22 @@ const char *Logger::levelName(Level l) {
 void Logger::printState(State state, program p, ProgramConfig cfg){
     switch (state) {
         case State::Starting:
-            this->log(Level::INFO, "spawned: 'noname' with pid " +  std::to_string(p.pid));
+            this->log(Level::INFO, "spawned: " + p.name + " with pid " +  std::to_string(p.pid));
             break;
         case State::Running:
-            this->log(Level::INFO, "success: noname entered RUNNING state, process has stayed up for > than " + std::to_string(cfg.getStartSecs()) + " seconds (startsecs)");
+            this->log(Level::INFO, "success: " + p.name + "entered RUNNING state, process has stayed up for > than " + std::to_string(cfg.getStartSecs()) + " seconds (startsecs)");
             break;
         case State::Stopped:{
             const char *abbr = sigabbrev_np(p.exitsig);
             std::string name = abbr ? std::string("SIG") + abbr : "signal " + std::to_string(p.exitsig);
-            this->log(Level::WARN, "stopped: noname (terminated by " + name + ")");
+            this->log(Level::WARN, "stopped: " + p.name +" (terminated by " + name + ")");
             break;
         }
         case State::Exited:
-            this->log(Level::WARN, "exited: noname (exit status " + std::to_string(p.exitcode) + "; not expected)");
+            this->log(Level::WARN, "exited: " + p.name + " (exit status " + std::to_string(p.exitcode) + "; not expected)");
             break;
         case State::Fatal:
-            this->log(Level::INFO, "gave up: nonname entered FATAL state, too many start retries too quickly");
+            this->log(Level::INFO, "gave up: " + p.name + " entered FATAL state, too many start retries too quickly");
             break;    
         default:
             break;
