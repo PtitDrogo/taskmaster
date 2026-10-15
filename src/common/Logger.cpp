@@ -71,7 +71,7 @@ void Logger::printState(State state, program p, ProgramConfig cfg){
             this->log(Level::INFO, "spawned: " + p.name + " with pid " +  std::to_string(p.pid));
             break;
         case State::Running:
-            this->log(Level::INFO, "success: " + p.name + "entered RUNNING state, process has stayed up for > than " + std::to_string(cfg.getStartSecs()) + " seconds (startsecs)");
+            this->log(Level::INFO, "success: " + p.name + " entered RUNNING state, process has stayed up for > than " + std::to_string(cfg.getStartSecs()) + " seconds (startsecs)");
             break;
         case State::Stopped:{
             const char *abbr = sigabbrev_np(p.exitsig);

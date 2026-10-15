@@ -449,16 +449,6 @@ void ProgramConfig::startProgram(program &p) {
         return;
     }
 
-    //rajout
-    // std::vector<std::string> args = splitCommand(this->cmd);
-    // std::vector<char *> argv;
-    // for (auto &a : args){
-    //     std::cout << a.data() << std::endl;
-    //     argv.push_back(a.data());
-    // }
-    // argv.push_back(nullptr);
-    //fin rajout
-
     pid_t pid = forkpty(&p.master_fd, nullptr, nullptr, nullptr);
     if (pid < 0) {
         perror("forkpty");
@@ -469,8 +459,8 @@ void ProgramConfig::startProgram(program &p) {
     }
     if (pid == 0) {
         close(statusp[0]);
-        auto fail = [&]() {
-            int e = errno;
+        auto fail = [&](int e) {
+            // std::cout << "error :" << strerror(errno) << " " << errno << std::endl;
             write(statusp[1], &e, sizeof(e));
             _exit(127);
         };
@@ -479,32 +469,43 @@ void ProgramConfig::startProgram(program &p) {
             _exit(127);
         }
         if (!this->workingdir.empty() && chdir(this->workingdir.c_str()) == -1) {
-            perror("chdir failed");
-            _exit(127);
+            fail(EINVAL);
         }
         ::umask(m_umask);
         wordexp_t p;
-        std::cout << cmd.c_str() << std::endl;
         if (wordexp(cmd.c_str(), &p, WRDE_NOCMD | WRDE_UNDEF) == 0) {
             execvpe(p.we_wordv[0], p.we_wordv, getEnvp());
         }
         wordfree(&p);
-        fail();
-        // _exit(127);
+        fail(errno);
     }
+
+    close(errp[1]);
+    close(statusp[1]);
+
     ssize_t n;
     int child_errno = 0;
     do { n = read(statusp[0], &child_errno, sizeof(child_errno)); }
     while (n == -1 && errno == EINTR);
     close(statusp[0]);
-    
     if (n > 0) {
-        waitpid(pid, nullptr, 0);     // reap it
-        Logger::get().error("spawnerr: '" + p.name + "': " + strerror(child_errno));
-        // p.state = State::Backoff;       // or Backoff
+        close(errp[0]);
+        close(p.master_fd);
+        p.master_fd = -1;
+        p.err_fd = -1;
+
+        Logger::get().info("spawnerr: '" + p.name + "': " + strerror(child_errno));
+
+        p.pid = pid;               // so the main loop can match it and call onExit
+        p.spawn_failed = true;
+        p.state = State::Starting;
+        p.start_time = time(nullptr);
+        p.killing = false;
+        return;
     }
+    
     Logger::get().info("spawned: '" + this->name + "' with pid " + std::to_string(pid));
-    //end of the execve case
+    p.state = State::Starting;
 
     p.err_fd = errp[0];
     fcntl(p.err_fd, F_SETFL, O_NONBLOCK);
@@ -512,9 +513,9 @@ void ProgramConfig::startProgram(program &p) {
     fcntl(p.master_fd, F_SETFD, FD_CLOEXEC);
     fcntl(p.master_fd, F_SETFL, O_NONBLOCK);
     p.pid = pid;
-    p.state = State::Starting;
     p.start_time = time(nullptr);
     p.killing = false;
+    p.spawn_failed = false;
 }
 
 void ProgramConfig::closeMaster(program &p) {
@@ -609,13 +610,27 @@ void ProgramConfig::tick(program &p, time_t now) {
 void ProgramConfig::onExit(program &p, int status) {
     p.exitcode = WEXITSTATUS(status);
     std::cout << "the exit code is " << p.exitcode << std::endl;
-    std::cout << "Program with PID" << p.pid << "Just ended" << std::endl;
+    std::cout << "Program with PID" << p.pid << " just ended" << std::endl;
 
     // This should only happen due to a reload with less numprocs
     if (p.exiled) {
         p.state = State::Stopped;
         p.killing = false;
         p.restarting = false;
+        return;
+    }
+
+    // case when command fail
+    if (p.spawn_failed) {
+        p.spawn_failed = false;
+        p.pid = -1;
+        time_t now = time(nullptr);
+        if (++p.curr_retries > startretries) {
+            this->setState(State::Fatal, p);        // logs "gave up: ..."
+        } else {
+            p.state = State::Backoff;
+            p.backoff_until = now + p.curr_retries; // supervisor: delay = retry count
+        }
         return;
     }
 

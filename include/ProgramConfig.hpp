@@ -34,6 +34,7 @@ struct program {
     time_t kill_deadline = 0;
     int waiting_client = -1; // Technically this should be a vector of clients.
     bool restarting = false;
+    bool spawn_failed = false;
 
     int master_fd = -1;
     int err_fd = -1;
