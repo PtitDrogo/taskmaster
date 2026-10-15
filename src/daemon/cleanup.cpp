@@ -12,7 +12,7 @@ static bool anyStopping(Configs &configs) {
 static void killAllPrograms(Configs &configs) {
     for (auto &[name, cfg] : configs.m_configs)
         for (auto &p : cfg.programs)
-            cfg.requestStop(p, -1); // sends stopsignal; ignores programs that aren't running
+            cfg.requestStop(p, -1);
 
     while (anyStopping(configs)) {
         int status;
@@ -20,12 +20,12 @@ static void killAllPrograms(Configs &configs) {
         while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
             auto [cfg, p] = configs.findByPid(pid);
             if (p)
-                cfg->onExit(*p, status); // killing=true -> Stopped, no autorestart
+                cfg->onExit(*p, status);
         }
         time_t now = time(nullptr);
         for (auto &[name, cfg] : configs.m_configs)
             for (auto &p : cfg.programs)
-                cfg.tick(p, now); // SIGKILL after stopwaitsecs
+                cfg.tick(p, now);
         usleep(50000);
     }
 }

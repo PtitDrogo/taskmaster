@@ -30,7 +30,7 @@ void handleDeadProcesses(Configs &configs) {
         if (fd != -1) {
             p->waiting_client = -1;
             bool othersPending = false;
-            // we only send a reply once all the processes of a config are dead.
+            // this is if we ever go back to group delete.
             for (auto &q : cfg->programs)
                 if (q.waiting_client == fd)
                     othersPending = true;
@@ -79,17 +79,15 @@ int readClientInputs(std::vector<pollfd> &fds, Configs &configs) {
         ssize_t n = read(client_fd, buf, sizeof(buf) - 1);
 
         if (n <= 0) {
-            std::cout << "Client disconnected (fd=" << client_fd << ")\n";
             configs.forgetClient(client_fd);
             close(client_fd);
             fds.erase(fds.begin() + i);
             continue;
         }
 
-        // input is attached program
         if (program *ap = configs.findAttached(client_fd)) {
             handleAttachedInput(*ap, buf, n);
-            continue; // never parsed as a command
+            continue;
         }
 
         std::string cmd(buf);
@@ -98,7 +96,6 @@ int readClientInputs(std::vector<pollfd> &fds, Configs &configs) {
             cleanup(fds, configs);
             return 0;
         } else if (err == CLIENT_DISCONNECT) {
-            std::cout << "Client disconnected (fd=" << client_fd << ")\n";
             configs.forgetClient(client_fd);
             close(client_fd);
             fds.erase(fds.begin() + i);

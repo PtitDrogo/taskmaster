@@ -72,7 +72,7 @@ struct Configs {
                 if (p.waiting_client == fd)
                     p.waiting_client = -1;
                 if (p.attached_client == fd)
-                    p.attached_client = -1; // new
+                    p.attached_client = -1;
             }
     }
 

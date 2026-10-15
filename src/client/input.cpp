@@ -13,7 +13,6 @@ void readResponseAndPrint(int fd) {
     }
 }
 
-// Magic function that attach itself to a terminal
 void attachSession(int fd) {
     char buf[4096];
     ssize_t n = read(fd, buf, sizeof buf);
@@ -39,7 +38,7 @@ void attachSession(int fd) {
         const char *key = static_cast<const char *>(memchr(p, DETACH_KEY, len));
         write(STDOUT_FILENO, p, key ? key - p : len);
         if (key)
-            done = true; // daemon's ack / process died
+            done = true;
     };
     show(resp.data() + head.size(), resp.size() - head.size()); // scrollback
 
@@ -54,7 +53,7 @@ void attachSession(int fd) {
             n = read(STDIN_FILENO, buf, sizeof buf);
             if (n <= 0)
                 break;
-            write(fd, buf, n); // daemon looks for DETACH_KEY itself
+            write(fd, buf, n); 
         }
         if (pfds[1].revents & (POLLIN | POLLHUP)) {
             n = read(fd, buf, sizeof buf);
@@ -63,6 +62,6 @@ void attachSession(int fd) {
             show(buf, n);
         }
     }
-    tcsetattr(STDIN_FILENO, TCSANOW, &orig); // always restore
+    tcsetattr(STDIN_FILENO, TCSANOW, &orig); 
     std::cout << "\n[detached]\n";
 }

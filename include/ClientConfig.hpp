@@ -11,8 +11,6 @@ class ClientConfig {
     std::string prompt = "supervisor";
 
   public:
-    ClientConfig(/* args */);
-    ~ClientConfig();
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
     static int startClient();

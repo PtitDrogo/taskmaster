@@ -153,7 +153,7 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             }
             return setOnce(setting, autorestart, ar);
         } else if (setting == "exitcodes") {
-            exitcodes.push_back(std::stoi(value)); // repeatable
+            exitcodes.push_back(std::stoi(value));
         } else if (setting == "stopsignal") {
             int sig = parseSignals(value);
             if (sig == -1) {
@@ -161,7 +161,7 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
                 return 0;
             }
             return setOnce(setting, stopsignal, sig);
-        } else if (setting == "environment") { // repeatable
+        } else if (setting == "environment") {
             if (addEnvironnement(value)) {
                 std::cerr << "Invalid environment '" << value << "' in [" << name << "]\n";
                 return 0;
@@ -202,7 +202,7 @@ void ProgramConfig::redirectFiles() {
 int ProgramConfig::openRedirection() {
     int out = openLog(this->stdout_logfile, "stdout");
     if (out < 0) {
-        int e = errno; // save before any other call
+        int e = errno;
         std::cerr << "Error: cannot open '" << this->stdout_logfile << "' in section '" << this->name
                   << "': " << strerror(e) << "\n";
         return e;
@@ -241,15 +241,11 @@ void ProgramConfig::removeOlderLogFile(const std::string &identifier) {
 
 int ProgramConfig::generateRandomFile(const std::string &identifier) {
 
-    // Remove the older random file
     this->removeOlderLogFile(identifier);
-    // create random file
     std::string path = "/tmp/" + this->name + "-" + identifier + "---taskmaster-XXXXXX.log";
     std::vector<char> buf(path.begin(), path.end());
     buf.push_back('\0');
 
-    // std::cout << "the path is " << buf.data() << std::endl;
-    // create fd link to this file
     int fd = mkstemps(buf.data(), 4);
     if (fd < 0)
         return -1;
@@ -298,8 +294,8 @@ void ProgramConfig::scaleToNumprocs() {
         if (programs[i].exiled)
             continue;
         programs[i].exiled = true;
-        programs[i].restarting = false; // handleModifiedPrograms set it, cancel it
-        requestStop(programs[i], -1);   // no-op if already Stopping
+        programs[i].restarting = false; 
+        requestStop(programs[i], -1); 
         --active;
     }
 }
@@ -340,67 +336,9 @@ void ProgramConfig::setProgramName(program &p) {
     return;
 }
 
-std::vector<std::string> splitCommand(const std::string &cmd) {
-    enum Quote { NONE, SINGLE, DOUBLE };
-
-    std::vector<std::string> args;
-    std::string cur;
-    bool inToken = false; // true even for an empty token like ""
-    Quote quote = NONE;
-
-    for (size_t i = 0; i < cmd.size(); ++i) {
-        char c = cmd[i];
-
-        if (quote == SINGLE) {
-            // everything is literal until the closing '
-            if (c == '\'')
-                quote = NONE;
-            else
-                cur += c;
-        } else if (quote == DOUBLE) {
-            if (c == '"') {
-                quote = NONE;
-            } else if (c == '\\' && i + 1 < cmd.size() && (cmd[i + 1] == '"' || cmd[i + 1] == '\\')) {
-                cur += cmd[++i]; // \" -> "   and   \\ -> \ .
-            } else {
-                cur += c;
-            }
-        } else {
-            if (std::isspace(static_cast<unsigned char>(c))) {
-                if (inToken) {
-                    args.push_back(cur);
-                    cur.clear();
-                    inToken = false;
-                }
-            } else if (c == '\'') {
-                quote = SINGLE;
-                inToken = true;
-            } else if (c == '"') {
-                quote = DOUBLE;
-                inToken = true;
-            } else if (c == '\\') {
-                if (i + 1 >= cmd.size())
-                    throw std::invalid_argument("trailing backslash in command");
-                cur += cmd[++i];
-                inToken = true;
-            } else {
-                cur += c;
-                inToken = true;
-            }
-        }
-    }
-
-    if (quote != NONE)
-        throw std::invalid_argument("unterminated quote in command");
-    if (inToken)
-        args.push_back(cur);
-
-    return args;
-}
-
 std::string resolvePath(const std::string &prog, const char *pathVar) {
     if (prog.find('/') != std::string::npos)
-        return prog; // already a path
+        return prog;
     if (!pathVar)
         pathVar = "/usr/local/bin:/usr/bin:/bin";
 
@@ -418,13 +356,12 @@ std::string resolvePath(const std::string &prog, const char *pathVar) {
             return full;
         start = end + 1;
     }
-    return ""; // not found
+    return ""; 
 }
 
 // This always starts a program
 // Logic for not starting a program should be outside of this.
 void ProgramConfig::startProgram(program &p) {
-    std::cout << "command is: " << this->cmd << std::endl;
     setProgramName(p);
     this->fillEnvp();
     this->closeMaster(p);
@@ -460,16 +397,14 @@ void ProgramConfig::startProgram(program &p) {
     if (pid == 0) {
         close(statusp[0]);
         auto fail = [&](int e) {
-            // std::cout << "error :" << strerror(errno) << " " << errno << std::endl;
             write(statusp[1], &e, sizeof(e));
             _exit(127);
         };
-        dup2(errp[1], STDERR_FILENO); // fd 2 now goes to the pipe, not the pty
+        dup2(errp[1], STDERR_FILENO);
         if (dropPrivilegesProgram(this->user) == -1) {
             _exit(127);
         }
         if (!this->workingdir.empty() && chdir(this->workingdir.c_str()) == -1) {
-            printf("Im looping\n");
             fail(EINVAL);
         }
         ::umask(m_umask);
@@ -498,7 +433,7 @@ void ProgramConfig::startProgram(program &p) {
 
         Logger::get().info("spawnerr: '" + p.name + "': " + strerror(child_errno));
 
-        p.pid = pid; // so the main loop can match it and call onExit
+        p.pid = pid;
         p.spawn_failed = true;
         p.state = State::Starting;
         p.start_time = time(nullptr);
@@ -508,8 +443,8 @@ void ProgramConfig::startProgram(program &p) {
 
     Logger::get().info("spawned: '" + this->name + "' with pid " + std::to_string(pid));
     p.state = State::Starting;
-
     p.err_fd = errp[0];
+    
     fcntl(p.err_fd, F_SETFL, O_NONBLOCK);
 
     fcntl(p.master_fd, F_SETFD, FD_CLOEXEC);
@@ -522,7 +457,7 @@ void ProgramConfig::startProgram(program &p) {
 
 void ProgramConfig::closeMaster(program &p) {
     if (p.attached_client != -1) {
-        reply(p.attached_client, std::string(1, DETACH_KEY)); // tells client to leave attach mode
+        reply(p.attached_client, std::string(1, DETACH_KEY));
         p.attached_client = -1;
     }
     if (p.master_fd != -1) {
@@ -542,7 +477,7 @@ void ProgramConfig::onMasterReadable(program &p) {
             p.scrollback.erase(0, p.scrollback.size() - SCROLLBACK_MAX);
         if (p.attached_client != -1)
             write(p.attached_client, buf, n);
-    } else if (n == 0 || (errno != EAGAIN && errno != EINTR)) { // EIO = slave closed
+    } else if (n == 0 || (errno != EAGAIN && errno != EINTR)) {
         closeMaster(p);
     }
 }
@@ -559,7 +494,7 @@ void ProgramConfig::onErrReadable(program &p) {
     ssize_t n = read(p.err_fd, buf, sizeof buf);
     if (n > 0) {
         if (fderr > 0)
-            write(fderr, buf, n); // stderr log
+            write(fderr, buf, n);
         p.scrollback.append(buf, n);
         if (p.scrollback.size() > SCROLLBACK_MAX)
             p.scrollback.erase(0, p.scrollback.size() - SCROLLBACK_MAX);
@@ -573,7 +508,6 @@ void ProgramConfig::onErrReadable(program &p) {
 bool ProgramConfig::requestStop(program &p, int client_fd) {
     if (p.state == State::Backoff) {
         p.state = State::Stopped;
-        std::cout << "je suis dans l'aute killing" << std::endl;
         return true;
     }
     if (p.state != State::Running && p.state != State::Starting)
@@ -582,26 +516,25 @@ bool ProgramConfig::requestStop(program &p, int client_fd) {
     p.state = State::Stopping;
     p.kill_deadline = time(nullptr) + stopwaitsecs;
     p.waiting_client = client_fd;
-    kill(-p.pid, stopsignal); // group, since your cmds nest shells
+    kill(-p.pid, stopsignal);
     return true;
 }
 
 void ProgramConfig::tick(program &p, time_t now) {
     switch (p.state) {
     case State::Starting:
-        if (now - p.start_time >= startsecs) { // survived long enough
-            // p.state = State::Running;
+        if (now - p.start_time >= startsecs) {
             this->setState(State::Running, p);
             p.curr_retries = 0;
         }
         break;
     case State::Backoff:
         if (now >= p.backoff_until)
-            startProgram(p); // retry
+            startProgram(p);
         break;
     case State::Stopping:
         if (now > p.kill_deadline)
-            kill(-p.pid, SIGKILL); // replaces killTimedOutPrograms
+            kill(-p.pid, SIGKILL);
         break;
     default:
         break;
@@ -610,8 +543,6 @@ void ProgramConfig::tick(program &p, time_t now) {
 
 void ProgramConfig::onExit(program &p, int status) {
     p.exitcode = WEXITSTATUS(status);
-    std::cout << "the exit code is " << p.exitcode << std::endl;
-    std::cout << "Program with PID" << p.pid << " just ended" << std::endl;
 
     // This should only happen due to a reload with less numprocs
     if (p.exiled) {
@@ -621,29 +552,24 @@ void ProgramConfig::onExit(program &p, int status) {
         return;
     }
 
-    // case when command fail
     if (p.spawn_failed) {
         p.spawn_failed = false;
         p.pid = -1;
         time_t now = time(nullptr);
         if (++p.curr_retries > startretries) {
-            this->setState(State::Fatal, p); // logs "gave up: ..."
+            this->setState(State::Fatal, p);
         } else {
             p.state = State::Backoff;
-            p.backoff_until = now + p.curr_retries; // supervisor: delay = retry count
+            p.backoff_until = now + p.curr_retries;
         }
         return;
     }
 
-    // we Asked for it
     if (p.killing) {
-        // p.state = State::Stopped;
         bool stopstate = WIFSIGNALED(status);
         p.exitsig = stopstate ? WTERMSIG(status) : -1;
         this->setState(State::Stopped, p);
         p.killing = false;
-        // We want it to restart, this could be because of the restart command
-        // or because we reloaded and it has the autoStart Feature.
         if (p.restarting) {
             p.restarting = false;
             startProgram(p);
@@ -655,20 +581,15 @@ void ProgramConfig::onExit(program &p, int status) {
     if (diedTooEarly) {
 
         this->setState(State::Exited, p);
-        // died too early: failed start
         if (++p.curr_retries > startretries) {
-            // p.state = State::Fatal;
-            std::cout << "je suis dans le fatal" << std::endl;
             this->setState(State::Fatal, p);
         } else {
-            std::cout << "je suis dans le backoff" << std::endl;
             p.state = State::Backoff;
             int delay = p.curr_retries * 2;
             p.backoff_until = now + delay;
         }
         return;
     }
-    // p.state = State::Exited;
     this->setState(State::Exited, p);
     bool returnCodeIsInList = std::find(exitcodes.begin(), exitcodes.end(), WEXITSTATUS(status)) != exitcodes.end();
     bool diedNormally = WIFEXITED(status) && returnCodeIsInList;
@@ -681,8 +602,7 @@ void ProgramConfig::setState(State state, program &p) {
     Logger::get().printState(state, p, *this);
 }
 
-// This could be done automatically with c++ 20 and better class organization, oh well !
-// If we add something to ProgramConfig we have to add it here, boooooo
+// I know, sorry ...
 bool ProgramConfig::areSettingsEqual(const ProgramConfig &a, const ProgramConfig &b) {
     return std::tie(a.name, a.cmd, a.numprocs, a.autostart, a.startsecs, a.autorestart, a.exitcodes, a.startretries,
                     a.stopsignal, a.stopwaitsecs, a.discard_stdout, a.discard_stderr, a.stdout_logfile,

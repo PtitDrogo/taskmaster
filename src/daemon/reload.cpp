@@ -1,18 +1,6 @@
 #include "server.hpp"
 #include <utils.hpp>
 
-// I have to parse the new config file again.
-// I have to detect which config changed.
-
-// Unchanged config arent touched.
-// New processes must be started
-// Program with a modified config must be reloaded
-// Program removed from the config, we stop them.
-
-// I cant think of a super super smart way to do it. So lets do it in passes.
-
-// First we pass the new config and we generate a new Configs object.
-// We set programs in the existing config to be deleted for real.
 static void handleRemovedPrograms(Configs &configs, const Configs &newConfigs) {
     for (auto &[name, config] : configs.m_configs) {
         if (newConfigs.m_configs.count(name))
@@ -29,7 +17,6 @@ static int handleNewPrograms(Configs &configs, const Configs &newConfigs) {
         if (configs.m_configs.count(name))
             continue;
 
-        // We add new programs to configs and then we start them, simple as
         auto [it, inserted] = configs.m_configs.emplace(name, config);
         if (inserted && it->second.shouldAutostart()) {
             if (it->second.startAllPrograms() == -1) {
@@ -53,23 +40,24 @@ static void handleModifiedPrograms(Configs &configs, const Configs &newConfigs) 
         ProgramConfig::copySettings(newConfig, oldConfig);
 
         const bool autostart = oldConfig.getAutoStart();
-        const size_t n = oldConfig.programs.size(); // snapshot before scaling
+        const size_t n = oldConfig.programs.size();
+
+        oldConfig.openRedirection();
         for (size_t i = 0; i < n; ++i) {
             program &p = oldConfig.programs[i];
             if (p.exiled)
                 continue;
             if (oldConfig.requestStop(p, -1) || p.state == State::Stopping)
-                p.restarting = autostart; // onExit() will restart it
+                p.restarting = autostart;
             else if (autostart)
-                oldConfig.startProgram(p); // wasn't running: start directly
+                oldConfig.startProgram(p);
         }
         if (autostart)
-            oldConfig.scaleToNumprocs(); // after the loop
+            oldConfig.scaleToNumprocs();
     }
 }
 
 int handleReload(int client_fd, Configs &configs) {
-    // Read and parse the new config file
     Configs newConfigs;
     int result = ini_parse(configs.server.getConfigPath().c_str(), handler, &newConfigs);
 

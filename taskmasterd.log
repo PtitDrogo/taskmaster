@@ -262,3 +262,472 @@
 2026-10-15 16:21:18,789 WARN exited: fatal_nocmd (exit status 0; not expected)
 2026-10-15 16:21:20,795 INFO spawned: 'fatal_nocmd' with pid 16617
 2026-10-15 16:21:20,796 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:20:10,561 INFO Taskmasterd started with pid 9798
+2026-10-15 17:20:10,578 INFO spawned: 'fatal_nocmd' with pid 9802
+2026-10-15 17:20:10,578 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:20:12,972 INFO spawned: 'fatal_nocmd' with pid 9831
+2026-10-15 17:20:12,975 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:21:01,303 INFO Taskmasterd started with pid 10291
+2026-10-15 17:21:01,304 INFO spawned: 'fatal_nocmd' with pid 10292
+2026-10-15 17:21:01,305 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:21:03,784 INFO spawned: 'fatal_nocmd' with pid 10315
+2026-10-15 17:21:03,786 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:32:06,631 INFO Taskmasterd started with pid 11757
+2026-10-15 17:32:06,632 INFO spawned: 'fatal_nocmd' with pid 11758
+2026-10-15 17:32:06,633 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:32:08,961 INFO spawned: 'fatal_nocmd' with pid 11781
+2026-10-15 17:32:08,965 INFO spawned: 'fatal_nocmd' with pid 11782
+2026-10-15 17:32:08,969 INFO spawned: 'fatal_nocmd' with pid 11783
+2026-10-15 17:32:08,971 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:33:09,243 INFO Taskmasterd started with pid 12066
+2026-10-15 17:33:09,244 INFO spawned: 'fatal_nocmd' with pid 12067
+2026-10-15 17:33:09,245 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:33:11,642 INFO spawned: 'fatal_nocmd' with pid 12092
+2026-10-15 17:33:11,647 INFO spawned: 'fatal_nocmd' with pid 12093
+2026-10-15 17:33:11,648 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:34:56,352 INFO Taskmasterd started with pid 12625
+2026-10-15 17:34:56,355 INFO spawned: 'fatal_nocmd' with pid 12626
+2026-10-15 17:34:56,356 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:34:58,655 INFO spawned: 'fatal_nocmd' with pid 12657
+2026-10-15 17:34:58,656 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:35:23,153 INFO spawned: 'fatal_nocmd' with pid 12949
+2026-10-15 17:35:23,155 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:38:21,590 INFO Taskmasterd started with pid 13617
+2026-10-15 17:38:21,592 INFO spawned: 'fatal_nocmd' with pid 13618
+2026-10-15 17:38:21,593 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:38:24,021 INFO spawned: 'fatal_nocmd' with pid 13645
+2026-10-15 17:38:24,025 INFO spawned: 'fatal_nocmd' with pid 13646
+2026-10-15 17:38:24,026 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:38:37,622 INFO spawned: 'fatal_nocmd' with pid 13802
+2026-10-15 17:38:37,624 WARN exited: fatal_nocmd (exit status 0; not expected)
+2026-10-15 17:41:02,748 INFO Taskmasterd started with pid 14077
+2026-10-15 17:41:02,750 INFO spawned: 'fatal_nocmd' with pid 14078
+2026-10-15 17:41:02,752 INFO spawned: 'fatal_nocmd' with pid 14079
+2026-10-15 17:41:02,753 INFO spawned: 'fatal_nocmd' with pid 14080
+2026-10-15 17:41:02,754 INFO spawned: 'fatal_nocmd' with pid 14081
+2026-10-15 17:41:02,756 INFO spawned: 'fatal_nocmd' with pid 14082
+2026-10-15 17:41:02,757 INFO spawned: 'fatal_nocmd' with pid 14083
+2026-10-15 17:41:02,759 INFO spawned: 'fatal_nocmd' with pid 14084
+2026-10-15 17:41:02,761 INFO spawned: 'fatal_nocmd' with pid 14085
+2026-10-15 17:41:02,764 INFO spawned: 'fatal_nocmd' with pid 14086
+2026-10-15 17:41:02,768 INFO spawned: 'fatal_nocmd' with pid 14087
+2026-10-15 17:41:02,772 INFO spawned: 'fatal_nocmd' with pid 14088
+2026-10-15 17:41:02,777 INFO spawned: 'fatal_nocmd' with pid 14089
+2026-10-15 17:41:02,780 INFO spawned: 'fatal_nocmd' with pid 14090
+2026-10-15 17:41:02,782 INFO spawned: 'fatal_nocmd' with pid 14091
+2026-10-15 17:41:02,784 INFO spawned: 'fatal_nocmd' with pid 14092
+2026-10-15 17:41:02,785 INFO spawned: 'fatal_nocmd' with pid 14093
+2026-10-15 17:41:02,790 INFO spawned: 'fatal_nocmd' with pid 14094
+2026-10-15 17:41:02,791 INFO spawned: 'fatal_nocmd' with pid 14095
+2026-10-15 17:41:02,793 INFO spawned: 'fatal_nocmd' with pid 14096
+2026-10-15 17:41:02,794 INFO spawned: 'fatal_nocmd' with pid 14097
+2026-10-15 17:41:02,796 INFO spawned: 'fatal_nocmd' with pid 14098
+2026-10-15 17:41:02,800 INFO spawned: 'fatal_nocmd' with pid 14099
+2026-10-15 17:41:02,802 INFO spawned: 'fatal_nocmd' with pid 14100
+2026-10-15 17:41:02,803 INFO spawned: 'fatal_nocmd' with pid 14101
+2026-10-15 17:41:02,804 INFO spawned: 'fatal_nocmd' with pid 14102
+2026-10-15 17:41:02,808 INFO spawned: 'fatal_nocmd' with pid 14103
+2026-10-15 17:41:02,809 INFO spawned: 'fatal_nocmd' with pid 14104
+2026-10-15 17:41:02,810 INFO spawned: 'fatal_nocmd' with pid 14105
+2026-10-15 17:41:02,811 INFO spawned: 'fatal_nocmd' with pid 14106
+2026-10-15 17:41:02,812 INFO spawned: 'fatal_nocmd' with pid 14107
+2026-10-15 17:41:02,813 INFO spawned: 'fatal_nocmd' with pid 14108
+2026-10-15 17:41:02,814 INFO spawned: 'fatal_nocmd' with pid 14109
+2026-10-15 17:41:02,815 INFO spawned: 'fatal_nocmd' with pid 14110
+2026-10-15 17:41:02,815 INFO spawned: 'fatal_nocmd' with pid 14111
+2026-10-15 17:41:02,816 INFO spawned: 'fatal_nocmd' with pid 14112
+2026-10-15 17:41:02,816 INFO spawned: 'fatal_nocmd' with pid 14113
+2026-10-15 17:41:02,818 INFO spawned: 'fatal_nocmd' with pid 14114
+2026-10-15 17:41:02,819 INFO spawned: 'fatal_nocmd' with pid 14115
+2026-10-15 17:41:02,819 INFO spawned: 'fatal_nocmd' with pid 14116
+2026-10-15 17:41:02,820 INFO spawned: 'fatal_nocmd' with pid 14117
+2026-10-15 17:41:02,821 INFO spawned: 'fatal_nocmd' with pid 14118
+2026-10-15 17:41:02,822 INFO spawned: 'fatal_nocmd' with pid 14119
+2026-10-15 17:41:02,823 INFO spawned: 'fatal_nocmd' with pid 14120
+2026-10-15 17:41:02,824 INFO spawned: 'fatal_nocmd' with pid 14121
+2026-10-15 17:41:02,825 INFO spawned: 'fatal_nocmd' with pid 14122
+2026-10-15 17:41:02,826 INFO spawned: 'fatal_nocmd' with pid 14123
+2026-10-15 17:41:02,826 INFO spawned: 'fatal_nocmd' with pid 14124
+2026-10-15 17:41:02,827 INFO spawned: 'fatal_nocmd' with pid 14125
+2026-10-15 17:41:02,828 INFO spawned: 'fatal_nocmd' with pid 14126
+2026-10-15 17:41:02,829 INFO spawned: 'fatal_nocmd' with pid 14127
+2026-10-15 17:41:03,003 INFO success: fatal_nocmd entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,003 INFO success: fatal_nocmd_2 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,003 INFO success: fatal_nocmd_3 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,003 INFO success: fatal_nocmd_4 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,004 INFO success: fatal_nocmd_5 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,004 INFO success: fatal_nocmd_6 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,004 INFO success: fatal_nocmd_7 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,004 INFO success: fatal_nocmd_8 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,005 INFO success: fatal_nocmd_9 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,005 INFO success: fatal_nocmd_10 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,005 INFO success: fatal_nocmd_11 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,005 INFO success: fatal_nocmd_12 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,006 INFO success: fatal_nocmd_13 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,006 INFO success: fatal_nocmd_14 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,006 INFO success: fatal_nocmd_15 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,038 INFO success: fatal_nocmd_16 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,040 INFO success: fatal_nocmd_17 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,042 INFO success: fatal_nocmd_18 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,043 INFO success: fatal_nocmd_19 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,045 INFO success: fatal_nocmd_20 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,047 INFO success: fatal_nocmd_21 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,049 INFO success: fatal_nocmd_22 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,050 INFO success: fatal_nocmd_23 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,052 INFO success: fatal_nocmd_24 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,054 INFO success: fatal_nocmd_25 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,056 INFO success: fatal_nocmd_26 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,057 INFO success: fatal_nocmd_27 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,059 INFO success: fatal_nocmd_28 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,059 INFO success: fatal_nocmd_29 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,060 INFO success: fatal_nocmd_30 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,060 INFO success: fatal_nocmd_31 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,060 INFO success: fatal_nocmd_32 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,060 INFO success: fatal_nocmd_33 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,060 INFO success: fatal_nocmd_34 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,061 INFO success: fatal_nocmd_35 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,061 INFO success: fatal_nocmd_36 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,061 INFO success: fatal_nocmd_37 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,061 INFO success: fatal_nocmd_38 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,061 INFO success: fatal_nocmd_39 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,062 INFO success: fatal_nocmd_40 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,062 INFO success: fatal_nocmd_41 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,062 INFO success: fatal_nocmd_42 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,062 INFO success: fatal_nocmd_43 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,063 INFO success: fatal_nocmd_44 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,063 INFO success: fatal_nocmd_45 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,063 INFO success: fatal_nocmd_46 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,063 INFO success: fatal_nocmd_47 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,063 INFO success: fatal_nocmd_48 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,064 INFO success: fatal_nocmd_49 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:03,064 INFO success: fatal_nocmd_50 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:41:57,979 WARN stopped: fatal_nocmd (terminated by SIGTERM)
+2026-10-15 17:41:58,250 WARN stopped: fatal_nocmd_2 (terminated by SIGTERM)
+2026-10-15 17:41:58,553 WARN stopped: fatal_nocmd_3 (terminated by SIGTERM)
+2026-10-15 17:41:58,812 WARN stopped: fatal_nocmd_4 (terminated by SIGTERM)
+2026-10-15 17:41:59,187 WARN stopped: fatal_nocmd_5 (terminated by SIGTERM)
+2026-10-15 17:41:59,454 WARN stopped: fatal_nocmd_6 (terminated by SIGTERM)
+2026-10-15 17:42:00,174 WARN stopped: fatal_nocmd_7 (terminated by SIGTERM)
+2026-10-15 17:42:00,465 WARN stopped: fatal_nocmd_8 (terminated by SIGTERM)
+2026-10-15 17:42:01,173 WARN stopped: fatal_nocmd_9 (terminated by SIGTERM)
+2026-10-15 17:42:01,429 WARN stopped: fatal_nocmd_10 (terminated by SIGTERM)
+2026-10-15 17:42:03,440 WARN stopped: fatal_nocmd_11 (terminated by SIGTERM)
+2026-10-15 17:42:03,779 WARN stopped: fatal_nocmd_12 (terminated by SIGTERM)
+2026-10-15 17:42:04,017 WARN stopped: fatal_nocmd_13 (terminated by SIGTERM)
+2026-10-15 17:42:04,281 WARN stopped: fatal_nocmd_14 (terminated by SIGTERM)
+2026-10-15 17:42:04,565 WARN stopped: fatal_nocmd_15 (terminated by SIGTERM)
+2026-10-15 17:42:04,844 WARN stopped: fatal_nocmd_16 (terminated by SIGTERM)
+2026-10-15 17:42:05,233 WARN stopped: fatal_nocmd_17 (terminated by SIGTERM)
+2026-10-15 17:42:05,659 WARN stopped: fatal_nocmd_18 (terminated by SIGTERM)
+2026-10-15 17:42:05,916 WARN stopped: fatal_nocmd_19 (terminated by SIGTERM)
+2026-10-15 17:42:06,926 WARN stopped: fatal_nocmd_20 (terminated by SIGTERM)
+2026-10-15 17:42:07,213 WARN stopped: fatal_nocmd_21 (terminated by SIGTERM)
+2026-10-15 17:42:07,529 WARN stopped: fatal_nocmd_22 (terminated by SIGTERM)
+2026-10-15 17:42:07,832 WARN stopped: fatal_nocmd_23 (terminated by SIGTERM)
+2026-10-15 17:42:08,177 WARN stopped: fatal_nocmd_24 (terminated by SIGTERM)
+2026-10-15 17:42:08,539 WARN stopped: fatal_nocmd_25 (terminated by SIGTERM)
+2026-10-15 17:42:08,778 WARN stopped: fatal_nocmd_26 (terminated by SIGTERM)
+2026-10-15 17:42:09,178 WARN stopped: fatal_nocmd_27 (terminated by SIGTERM)
+2026-10-15 17:42:09,467 WARN stopped: fatal_nocmd_28 (terminated by SIGTERM)
+2026-10-15 17:42:09,774 WARN stopped: fatal_nocmd_29 (terminated by SIGTERM)
+2026-10-15 17:42:10,024 WARN stopped: fatal_nocmd_30 (terminated by SIGTERM)
+2026-10-15 17:42:10,252 WARN stopped: fatal_nocmd_31 (terminated by SIGTERM)
+2026-10-15 17:42:10,547 WARN stopped: fatal_nocmd_32 (terminated by SIGTERM)
+2026-10-15 17:42:10,973 WARN stopped: fatal_nocmd_33 (terminated by SIGTERM)
+2026-10-15 17:42:11,233 WARN stopped: fatal_nocmd_34 (terminated by SIGTERM)
+2026-10-15 17:42:11,550 WARN stopped: fatal_nocmd_35 (terminated by SIGTERM)
+2026-10-15 17:42:11,793 WARN stopped: fatal_nocmd_36 (terminated by SIGTERM)
+2026-10-15 17:42:11,971 WARN stopped: fatal_nocmd_37 (terminated by SIGTERM)
+2026-10-15 17:42:12,331 WARN stopped: fatal_nocmd_38 (terminated by SIGTERM)
+2026-10-15 17:42:12,769 WARN stopped: fatal_nocmd_39 (terminated by SIGTERM)
+2026-10-15 17:42:13,031 WARN stopped: fatal_nocmd_40 (terminated by SIGTERM)
+2026-10-15 17:42:13,195 WARN stopped: fatal_nocmd_41 (terminated by SIGTERM)
+2026-10-15 17:42:13,427 WARN stopped: fatal_nocmd_42 (terminated by SIGTERM)
+2026-10-15 17:42:13,696 WARN stopped: fatal_nocmd_43 (terminated by SIGTERM)
+2026-10-15 17:42:13,855 WARN stopped: fatal_nocmd_44 (terminated by SIGTERM)
+2026-10-15 17:42:14,002 WARN stopped: fatal_nocmd_45 (terminated by SIGTERM)
+2026-10-15 17:42:14,267 WARN stopped: fatal_nocmd_46 (terminated by SIGTERM)
+2026-10-15 17:42:14,485 WARN stopped: fatal_nocmd_47 (terminated by SIGTERM)
+2026-10-15 17:42:14,663 WARN stopped: fatal_nocmd_48 (terminated by SIGTERM)
+2026-10-15 17:42:15,185 WARN stopped: fatal_nocmd_49 (terminated by SIGTERM)
+2026-10-15 17:42:15,470 WARN stopped: fatal_nocmd_50 (terminated by SIGTERM)
+2026-10-15 17:43:00,492 INFO Taskmasterd started with pid 14958
+2026-10-15 17:43:00,493 INFO spawned: 'fatal_nocmd' with pid 14961
+2026-10-15 17:43:00,497 INFO spawned: 'fatal_nocmd' with pid 14962
+2026-10-15 17:43:00,498 INFO spawned: 'fatal_nocmd' with pid 14964
+2026-10-15 17:43:00,499 INFO spawned: 'fatal_nocmd' with pid 14966
+2026-10-15 17:43:00,500 INFO spawned: 'fatal_nocmd' with pid 14968
+2026-10-15 17:43:00,502 INFO spawned: 'fatal_nocmd' with pid 14970
+2026-10-15 17:43:00,504 INFO spawned: 'fatal_nocmd' with pid 14972
+2026-10-15 17:43:00,505 INFO spawned: 'fatal_nocmd' with pid 14974
+2026-10-15 17:43:00,506 INFO spawned: 'fatal_nocmd' with pid 14976
+2026-10-15 17:43:00,506 INFO spawned: 'fatal_nocmd' with pid 14978
+2026-10-15 17:43:00,507 INFO spawned: 'fatal_nocmd' with pid 14980
+2026-10-15 17:43:00,508 INFO spawned: 'fatal_nocmd' with pid 14982
+2026-10-15 17:43:00,508 INFO spawned: 'fatal_nocmd' with pid 14984
+2026-10-15 17:43:00,509 INFO spawned: 'fatal_nocmd' with pid 14986
+2026-10-15 17:43:00,510 INFO spawned: 'fatal_nocmd' with pid 14988
+2026-10-15 17:43:00,510 INFO spawned: 'fatal_nocmd' with pid 14990
+2026-10-15 17:43:00,511 INFO spawned: 'fatal_nocmd' with pid 14992
+2026-10-15 17:43:00,511 INFO spawned: 'fatal_nocmd' with pid 14995
+2026-10-15 17:43:00,512 INFO spawned: 'fatal_nocmd' with pid 14996
+2026-10-15 17:43:00,513 INFO spawned: 'fatal_nocmd' with pid 14998
+2026-10-15 17:43:00,513 INFO spawned: 'fatal_nocmd' with pid 15000
+2026-10-15 17:43:00,514 INFO spawned: 'fatal_nocmd' with pid 15002
+2026-10-15 17:43:00,514 INFO spawned: 'fatal_nocmd' with pid 15004
+2026-10-15 17:43:00,515 INFO spawned: 'fatal_nocmd' with pid 15007
+2026-10-15 17:43:00,516 INFO spawned: 'fatal_nocmd' with pid 15009
+2026-10-15 17:43:00,517 INFO spawned: 'fatal_nocmd' with pid 15011
+2026-10-15 17:43:00,518 INFO spawned: 'fatal_nocmd' with pid 15012
+2026-10-15 17:43:00,518 INFO spawned: 'fatal_nocmd' with pid 15015
+2026-10-15 17:43:00,519 INFO spawned: 'fatal_nocmd' with pid 15016
+2026-10-15 17:43:00,520 INFO spawned: 'fatal_nocmd' with pid 15019
+2026-10-15 17:43:00,520 INFO spawned: 'fatal_nocmd' with pid 15021
+2026-10-15 17:43:00,522 INFO spawned: 'fatal_nocmd' with pid 15023
+2026-10-15 17:43:00,522 INFO spawned: 'fatal_nocmd' with pid 15025
+2026-10-15 17:43:00,524 INFO spawned: 'fatal_nocmd' with pid 15027
+2026-10-15 17:43:00,524 INFO spawned: 'fatal_nocmd' with pid 15028
+2026-10-15 17:43:00,525 INFO spawned: 'fatal_nocmd' with pid 15030
+2026-10-15 17:43:00,527 INFO spawned: 'fatal_nocmd' with pid 15033
+2026-10-15 17:43:00,527 INFO spawned: 'fatal_nocmd' with pid 15036
+2026-10-15 17:43:00,528 INFO spawned: 'fatal_nocmd' with pid 15037
+2026-10-15 17:43:00,529 INFO spawned: 'fatal_nocmd' with pid 15039
+2026-10-15 17:43:00,529 INFO spawned: 'fatal_nocmd' with pid 15041
+2026-10-15 17:43:00,530 INFO spawned: 'fatal_nocmd' with pid 15044
+2026-10-15 17:43:00,531 INFO spawned: 'fatal_nocmd' with pid 15046
+2026-10-15 17:43:00,531 INFO spawned: 'fatal_nocmd' with pid 15048
+2026-10-15 17:43:00,532 INFO spawned: 'fatal_nocmd' with pid 15051
+2026-10-15 17:43:00,533 INFO spawned: 'fatal_nocmd' with pid 15054
+2026-10-15 17:43:00,534 INFO spawned: 'fatal_nocmd' with pid 15055
+2026-10-15 17:43:00,535 INFO spawned: 'fatal_nocmd' with pid 15057
+2026-10-15 17:43:00,535 INFO spawned: 'fatal_nocmd' with pid 15059
+2026-10-15 17:43:00,536 INFO spawned: 'fatal_nocmd' with pid 15061
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_2 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_3 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_4 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_5 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_6 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_7 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_8 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_9 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_10 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_11 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_12 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_13 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_14 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_15 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_16 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_17 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_18 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_19 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_20 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_21 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_22 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_23 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_24 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_25 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_26 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_27 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_28 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_29 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_30 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_31 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_32 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_33 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_34 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_35 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_36 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_37 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_38 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_39 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_40 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_41 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_42 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_43 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_44 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_45 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_46 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_47 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_48 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_49 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:01,497 INFO success: fatal_nocmd_50 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:43:04,730 WARN stopped: fatal_nocmd (terminated by SIGTERM)
+2026-10-15 17:43:05,002 WARN stopped: fatal_nocmd_2 (terminated by SIGTERM)
+2026-10-15 17:43:05,274 WARN stopped: fatal_nocmd_3 (terminated by SIGTERM)
+2026-10-15 17:43:05,515 WARN stopped: fatal_nocmd_4 (terminated by SIGTERM)
+2026-10-15 17:43:05,775 WARN stopped: fatal_nocmd_5 (terminated by SIGTERM)
+2026-10-15 17:43:06,024 WARN stopped: fatal_nocmd_6 (terminated by SIGTERM)
+2026-10-15 17:43:06,282 WARN stopped: fatal_nocmd_7 (terminated by SIGTERM)
+2026-10-15 17:43:06,653 WARN stopped: fatal_nocmd_8 (terminated by SIGTERM)
+2026-10-15 17:43:06,905 WARN stopped: fatal_nocmd_9 (terminated by SIGTERM)
+2026-10-15 17:43:07,194 WARN stopped: fatal_nocmd_10 (terminated by SIGTERM)
+2026-10-15 17:43:07,493 WARN stopped: fatal_nocmd_11 (terminated by SIGTERM)
+2026-10-15 17:43:07,734 WARN stopped: fatal_nocmd_12 (terminated by SIGTERM)
+2026-10-15 17:43:07,949 WARN stopped: fatal_nocmd_13 (terminated by SIGTERM)
+2026-10-15 17:43:08,108 WARN stopped: fatal_nocmd_14 (terminated by SIGTERM)
+2026-10-15 17:43:08,362 WARN stopped: fatal_nocmd_15 (terminated by SIGTERM)
+2026-10-15 17:43:08,682 WARN stopped: fatal_nocmd_16 (terminated by SIGTERM)
+2026-10-15 17:43:08,862 WARN stopped: fatal_nocmd_17 (terminated by SIGTERM)
+2026-10-15 17:43:09,131 WARN stopped: fatal_nocmd_18 (terminated by SIGTERM)
+2026-10-15 17:43:09,392 WARN stopped: fatal_nocmd_19 (terminated by SIGTERM)
+2026-10-15 17:43:09,630 WARN stopped: fatal_nocmd_20 (terminated by SIGTERM)
+2026-10-15 17:43:09,907 WARN stopped: fatal_nocmd_21 (terminated by SIGTERM)
+2026-10-15 17:43:10,064 WARN stopped: fatal_nocmd_22 (terminated by SIGTERM)
+2026-10-15 17:43:10,446 WARN stopped: fatal_nocmd_23 (terminated by SIGTERM)
+2026-10-15 17:43:10,750 WARN stopped: fatal_nocmd_24 (terminated by SIGTERM)
+2026-10-15 17:43:10,929 WARN stopped: fatal_nocmd_25 (terminated by SIGTERM)
+2026-10-15 17:43:11,182 WARN stopped: fatal_nocmd_26 (terminated by SIGTERM)
+2026-10-15 17:43:11,467 WARN stopped: fatal_nocmd_27 (terminated by SIGTERM)
+2026-10-15 17:43:11,643 WARN stopped: fatal_nocmd_28 (terminated by SIGTERM)
+2026-10-15 17:43:11,885 WARN stopped: fatal_nocmd_29 (terminated by SIGTERM)
+2026-10-15 17:43:12,054 WARN stopped: fatal_nocmd_30 (terminated by SIGTERM)
+2026-10-15 17:43:12,318 WARN stopped: fatal_nocmd_31 (terminated by SIGTERM)
+2026-10-15 17:43:12,489 WARN stopped: fatal_nocmd_32 (terminated by SIGTERM)
+2026-10-15 17:43:12,872 WARN stopped: fatal_nocmd_33 (terminated by SIGTERM)
+2026-10-15 17:43:13,120 WARN stopped: fatal_nocmd_34 (terminated by SIGTERM)
+2026-10-15 17:43:13,290 WARN stopped: fatal_nocmd_35 (terminated by SIGTERM)
+2026-10-15 17:43:13,602 WARN stopped: fatal_nocmd_36 (terminated by SIGTERM)
+2026-10-15 17:43:14,034 WARN stopped: fatal_nocmd_37 (terminated by SIGTERM)
+2026-10-15 17:43:14,316 WARN stopped: fatal_nocmd_38 (terminated by SIGTERM)
+2026-10-15 17:43:14,489 WARN stopped: fatal_nocmd_39 (terminated by SIGTERM)
+2026-10-15 17:43:14,837 WARN stopped: fatal_nocmd_40 (terminated by SIGTERM)
+2026-10-15 17:43:15,222 WARN stopped: fatal_nocmd_41 (terminated by SIGTERM)
+2026-10-15 17:43:15,529 WARN stopped: fatal_nocmd_42 (terminated by SIGTERM)
+2026-10-15 17:43:15,701 WARN stopped: fatal_nocmd_43 (terminated by SIGTERM)
+2026-10-15 17:43:15,935 WARN stopped: fatal_nocmd_44 (terminated by SIGTERM)
+2026-10-15 17:43:16,148 WARN stopped: fatal_nocmd_45 (terminated by SIGTERM)
+2026-10-15 17:43:16,543 WARN stopped: fatal_nocmd_46 (terminated by SIGTERM)
+2026-10-15 17:43:16,831 WARN stopped: fatal_nocmd_47 (terminated by SIGTERM)
+2026-10-15 17:43:17,043 WARN stopped: fatal_nocmd_48 (terminated by SIGTERM)
+2026-10-15 17:43:17,221 WARN stopped: fatal_nocmd_49 (terminated by SIGTERM)
+2026-10-15 17:43:17,561 WARN stopped: fatal_nocmd_50 (terminated by SIGTERM)
+2026-10-15 17:44:17,312 INFO Taskmasterd started with pid 16050
+2026-10-15 17:44:17,313 INFO spawned: 'fatal_nocmd' with pid 16053
+2026-10-15 17:44:17,314 INFO spawned: 'fatal_nocmd' with pid 16054
+2026-10-15 17:44:17,314 INFO spawned: 'fatal_nocmd' with pid 16056
+2026-10-15 17:44:17,315 INFO spawned: 'fatal_nocmd' with pid 16058
+2026-10-15 17:44:17,315 INFO spawned: 'fatal_nocmd' with pid 16061
+2026-10-15 17:44:17,316 INFO spawned: 'fatal_nocmd' with pid 16063
+2026-10-15 17:44:17,316 INFO spawned: 'fatal_nocmd' with pid 16065
+2026-10-15 17:44:17,317 INFO spawned: 'fatal_nocmd' with pid 16067
+2026-10-15 17:44:17,317 INFO spawned: 'fatal_nocmd' with pid 16069
+2026-10-15 17:44:17,318 INFO spawned: 'fatal_nocmd' with pid 16071
+2026-10-15 17:44:17,319 INFO spawned: 'fatal_nocmd' with pid 16073
+2026-10-15 17:44:17,319 INFO spawned: 'fatal_nocmd' with pid 16075
+2026-10-15 17:44:17,320 INFO spawned: 'fatal_nocmd' with pid 16077
+2026-10-15 17:44:17,320 INFO spawned: 'fatal_nocmd' with pid 16079
+2026-10-15 17:44:17,321 INFO spawned: 'fatal_nocmd' with pid 16081
+2026-10-15 17:44:17,322 INFO spawned: 'fatal_nocmd' with pid 16083
+2026-10-15 17:44:17,323 INFO spawned: 'fatal_nocmd' with pid 16085
+2026-10-15 17:44:17,324 INFO spawned: 'fatal_nocmd' with pid 16087
+2026-10-15 17:44:17,325 INFO spawned: 'fatal_nocmd' with pid 16089
+2026-10-15 17:44:17,325 INFO spawned: 'fatal_nocmd' with pid 16091
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_2 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_3 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_4 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_5 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_6 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_7 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_8 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_9 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_10 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_11 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_12 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_13 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_14 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_15 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_16 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_17 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_18 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_19 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 17:44:18,315 INFO success: fatal_nocmd_20 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:00:58,918 WARN stopped: fatal_nocmd (terminated by SIGTERM)
+2026-10-15 18:00:59,274 WARN stopped: fatal_nocmd_2 (terminated by SIGTERM)
+2026-10-15 18:00:59,783 WARN stopped: fatal_nocmd_3 (terminated by SIGTERM)
+2026-10-15 18:01:00,132 WARN stopped: fatal_nocmd_4 (terminated by SIGTERM)
+2026-10-15 18:01:00,397 WARN stopped: fatal_nocmd_5 (terminated by SIGTERM)
+2026-10-15 18:01:00,690 WARN stopped: fatal_nocmd_6 (terminated by SIGTERM)
+2026-10-15 18:01:01,029 WARN stopped: fatal_nocmd_7 (terminated by SIGTERM)
+2026-10-15 18:01:01,319 WARN stopped: fatal_nocmd_8 (terminated by SIGTERM)
+2026-10-15 18:01:01,648 WARN stopped: fatal_nocmd_9 (terminated by SIGTERM)
+2026-10-15 18:01:02,006 WARN stopped: fatal_nocmd_10 (terminated by SIGTERM)
+2026-10-15 18:01:02,228 WARN stopped: fatal_nocmd_11 (terminated by SIGTERM)
+2026-10-15 18:01:02,785 WARN stopped: fatal_nocmd_12 (terminated by SIGTERM)
+2026-10-15 18:01:03,069 WARN stopped: fatal_nocmd_13 (terminated by SIGTERM)
+2026-10-15 18:01:03,325 WARN stopped: fatal_nocmd_14 (terminated by SIGTERM)
+2026-10-15 18:01:03,683 WARN stopped: fatal_nocmd_15 (terminated by SIGTERM)
+2026-10-15 18:01:04,166 WARN stopped: fatal_nocmd_16 (terminated by SIGTERM)
+2026-10-15 18:01:04,470 WARN stopped: fatal_nocmd_17 (terminated by SIGTERM)
+2026-10-15 18:01:04,800 WARN stopped: fatal_nocmd_18 (terminated by SIGTERM)
+2026-10-15 18:01:05,066 WARN stopped: fatal_nocmd_19 (terminated by SIGTERM)
+2026-10-15 18:01:05,548 WARN stopped: fatal_nocmd_20 (terminated by SIGTERM)
+2026-10-15 18:01:27,436 INFO Taskmasterd started with pid 38206
+2026-10-15 18:01:27,438 INFO spawned: 'fatal_nocmd' with pid 38207
+2026-10-15 18:01:27,439 INFO spawned: 'fatal_nocmd' with pid 38208
+2026-10-15 18:01:28,440 INFO success: fatal_nocmd entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:01:28,440 INFO success: fatal_nocmd_2 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:01:43,923 WARN stopped: fatal_nocmd (terminated by SIGTERM)
+2026-10-15 18:01:44,179 INFO spawned: 'fatal_nocmd' with pid 38454
+2026-10-15 18:01:44,180 WARN stopped: fatal_nocmd_2 (terminated by SIGTERM)
+2026-10-15 18:01:44,410 INFO spawned: 'fatal_nocmd' with pid 38462
+2026-10-15 18:03:28,721 INFO spawned: 'fatal_nocmd' with pid 39376
+2026-10-15 18:03:28,724 INFO spawned: 'fatal_nocmd' with pid 39377
+2026-10-15 18:03:28,726 INFO spawned: 'fatal_nocmd' with pid 39379
+2026-10-15 18:03:28,729 INFO spawned: 'fatal_nocmd' with pid 39381
+2026-10-15 18:03:28,731 INFO spawned: 'fatal_nocmd' with pid 39383
+2026-10-15 18:03:29,727 INFO success: fatal_nocmd_3 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:03:29,727 INFO success: fatal_nocmd_4 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:03:29,727 INFO success: fatal_nocmd_5 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:04:16,934 INFO spawned: 'fatal_nocmd' with pid 39966
+2026-10-15 18:04:16,937 INFO spawned: 'fatal_nocmd' with pid 39967
+2026-10-15 18:04:16,938 WARN stopped: fatal_nocmd_3 (terminated by SIGTERM)
+2026-10-15 18:04:17,312 INFO spawned: 'fatal_nocmd' with pid 39971
+2026-10-15 18:04:17,312 WARN stopped: fatal_nocmd_4 (terminated by SIGTERM)
+2026-10-15 18:04:17,638 INFO spawned: 'fatal_nocmd' with pid 39974
+2026-10-15 18:04:47,253 INFO spawned: 'fatal_nocmd' with pid 40202
+2026-10-15 18:05:05,256 INFO Taskmasterd started with pid 40446
+2026-10-15 18:05:05,261 INFO spawned: 'fatal_nocmd' with pid 40447
+2026-10-15 18:05:05,263 INFO spawned: 'fatal_nocmd' with pid 40449
+2026-10-15 18:05:05,265 INFO spawned: 'fatal_nocmd' with pid 40451
+2026-10-15 18:05:05,267 INFO spawned: 'fatal_nocmd' with pid 40453
+2026-10-15 18:05:06,265 INFO success: fatal_nocmd entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:05:06,265 INFO success: fatal_nocmd_2 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:05:06,266 INFO success: fatal_nocmd_3 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:05:06,266 INFO success: fatal_nocmd_4 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:05:39,844 WARN stopped: fatal_nocmd (terminated by SIGTERM)
+2026-10-15 18:05:40,139 INFO spawned: 'fatal_nocmd' with pid 40829
+2026-10-15 18:05:40,139 WARN stopped: fatal_nocmd_2 (terminated by SIGTERM)
+2026-10-15 18:05:40,980 INFO spawned: 'fatal_nocmd' with pid 40846
+2026-10-15 18:06:01,726 INFO spawned: 'fatal_nocmd' with pid 40980
+2026-10-15 18:06:01,729 INFO spawned: 'fatal_nocmd' with pid 40982
+2026-10-15 18:06:01,733 INFO spawned: 'fatal_nocmd' with pid 40983
+2026-10-15 18:06:01,737 INFO spawned: 'fatal_nocmd' with pid 40986
+2026-10-15 18:06:01,741 INFO spawned: 'fatal_nocmd' with pid 40989
+2026-10-15 18:06:02,732 INFO success: fatal_nocmd_3 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:06:02,733 INFO success: fatal_nocmd_4 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:06:02,733 INFO success: fatal_nocmd_5 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:06:15,722 INFO spawned: 'fatal_nocmd' with pid 41184
+2026-10-15 18:06:15,723 INFO spawned: 'fatal_nocmd' with pid 41185
+2026-10-15 18:06:15,724 INFO spawned: 'fatal_nocmd' with pid 41187
+2026-10-15 18:06:15,726 INFO spawned: 'fatal_nocmd' with pid 41189
+2026-10-15 18:06:15,727 INFO spawned: 'fatal_nocmd' with pid 41191
+2026-10-15 18:06:15,728 INFO spawned: 'fatal_nocmd' with pid 41193
+2026-10-15 18:06:15,730 INFO spawned: 'fatal_nocmd' with pid 41195
+2026-10-15 18:06:15,730 WARN stopped: fatal_nocmd_3 (terminated by SIGTERM)
+2026-10-15 18:06:16,072 INFO spawned: 'fatal_nocmd' with pid 41199
+2026-10-15 18:06:16,073 WARN stopped: fatal_nocmd_4 (terminated by SIGTERM)
+2026-10-15 18:06:16,401 INFO spawned: 'fatal_nocmd' with pid 41202
+2026-10-15 18:06:16,402 WARN stopped: fatal_nocmd_5 (terminated by SIGTERM)
+2026-10-15 18:06:16,670 INFO spawned: 'fatal_nocmd' with pid 41206
+2026-10-15 18:06:16,670 INFO success: fatal_nocmd_6 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:06:16,670 INFO success: fatal_nocmd_7 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:06:16,670 INFO success: fatal_nocmd_8 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:06:16,670 INFO success: fatal_nocmd_9 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:06:16,670 INFO success: fatal_nocmd_10 entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2026-10-15 18:06:17,746 WARN stopped: fatal_nocmd_6 (terminated by SIGTERM)
+2026-10-15 18:06:18,017 WARN stopped: fatal_nocmd_7 (terminated by SIGTERM)
+2026-10-15 18:06:18,276 WARN stopped: fatal_nocmd_8 (terminated by SIGTERM)
+2026-10-15 18:06:18,555 WARN stopped: fatal_nocmd_9 (terminated by SIGTERM)
+2026-10-15 18:06:18,821 WARN stopped: fatal_nocmd_10 (terminated by SIGTERM)

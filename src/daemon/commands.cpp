@@ -65,7 +65,6 @@ static void handleStop(int client_fd, Configs &configs, const std::string &name)
         reply(client_fd, name + ": ERROR not running\n");
     else if (waiting == 0)
         reply(client_fd, name + ": stopped\n");
-    // otherwise the main loop writes "stopped" when each process is reaped
 }
 
 static void handleRestart(int client_fd, Configs &configs, const std::string &name) {
@@ -89,17 +88,16 @@ static void handleRestart(int client_fd, Configs &configs, const std::string &na
         return;
     }
     if (p->state == State::Running || p->state == State::Starting) {
-        cfg->requestStop(*p, client_fd); // -> Stopping, SIGKILL after stopwaitsecs
-        p->restarting = true;            // the main loop starts it once it is reaped
+        cfg->requestStop(*p, client_fd);
+        p->restarting = true;
         should_wait = true;
-    } else if (p->state != State::Stopping) { // Stopped, Exited, Fatal, Backoff
+    } else if (p->state != State::Stopping) {
         p->curr_retries = 0;
-        cfg->startProgram(*p); // nothing to wait for, start right away
+        cfg->startProgram(*p);
     }
 
     if (!should_wait)
         reply(client_fd, name + ": restarted\n");
-    // otherwise the main loop answers when the last process has been restarted
 }
 
 static const char *stateToString(State s) {
@@ -170,20 +168,17 @@ static void handleAttach(int client_fd, Configs &configs, const std::string &nam
     }
 
     reply(client_fd, "ATTACHED\n");
-    reply(client_fd, p->scrollback); // replay recent output
+    reply(client_fd, p->scrollback);
     p->attached_client = client_fd;
 }
 
 int handleCommands(int client_fd, std::string fullCmd, Configs &configs) {
-    std::cout << "Full Command is " << fullCmd << std::endl;
-
     std::istringstream iss(fullCmd);
     std::string cmd;
     std::string arg;
     iss >> cmd >> arg;
 
     if (cmd == "status") {
-        std::cout << "Properly received the Status request !\n" << std::endl;
         handleStatusCmd(client_fd, configs);
     } else if (cmd == "shutdown") {
         return handleShutdown(client_fd);
@@ -212,7 +207,6 @@ int handleCommands(int client_fd, std::string fullCmd, Configs &configs) {
         }
         handleRestart(client_fd, configs, arg);
     } else if (cmd == "reload") {
-        std::cout << "Properly received the Reload request !\n" << std::endl;
         handleReload(client_fd, configs);
     } else {
         reply(client_fd, "ERROR unknown command\n");
