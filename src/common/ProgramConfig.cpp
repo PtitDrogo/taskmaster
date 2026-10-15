@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <wordexp.h>
 
-
 void ProgramConfig::printSettings() const {
     std::cout << "Section: " << name << "\n"
               << "  command: " << cmd << "\n"
@@ -103,9 +102,7 @@ void ProgramConfig::fillEnvp() {
 
 char **ProgramConfig::getEnvp() { return this->envptr.data(); }
 
-int ProgramConfig::getStartSecs() const{
-    return this->startsecs;
-}
+int ProgramConfig::getStartSecs() const { return this->startsecs; }
 
 static int positiveCheck(int val, std::string setting) {
     if (val <= 0) {
@@ -265,7 +262,6 @@ int ProgramConfig::generateRandomFile(const std::string &identifier) {
     return fd;
 }
 
-
 int ProgramConfig::openLog(const std::string &path, const std::string &identifier) {
     if (path == "AUTO" || path.empty())
         return this->generateRandomFile(identifier);
@@ -349,7 +345,7 @@ std::vector<std::string> splitCommand(const std::string &cmd) {
 
     std::vector<std::string> args;
     std::string cur;
-    bool inToken = false;   // true even for an empty token like ""
+    bool inToken = false; // true even for an empty token like ""
     Quote quote = NONE;
 
     for (size_t i = 0; i < cmd.size(); ++i) {
@@ -357,20 +353,19 @@ std::vector<std::string> splitCommand(const std::string &cmd) {
 
         if (quote == SINGLE) {
             // everything is literal until the closing '
-            if (c == '\'') quote = NONE;
-            else cur += c;
-        }
-        else if (quote == DOUBLE) {
+            if (c == '\'')
+                quote = NONE;
+            else
+                cur += c;
+        } else if (quote == DOUBLE) {
             if (c == '"') {
                 quote = NONE;
-            } else if (c == '\\' && i + 1 < cmd.size()
-                       && (cmd[i + 1] == '"' || cmd[i + 1] == '\\')) {
-                cur += cmd[++i];        // \" -> "   and   \\ -> \ .
+            } else if (c == '\\' && i + 1 < cmd.size() && (cmd[i + 1] == '"' || cmd[i + 1] == '\\')) {
+                cur += cmd[++i]; // \" -> "   and   \\ -> \ .
             } else {
                 cur += c;
             }
-        }
-        else {
+        } else {
             if (std::isspace(static_cast<unsigned char>(c))) {
                 if (inToken) {
                     args.push_back(cur);
@@ -405,22 +400,25 @@ std::vector<std::string> splitCommand(const std::string &cmd) {
 
 std::string resolvePath(const std::string &prog, const char *pathVar) {
     if (prog.find('/') != std::string::npos)
-        return prog;                          // already a path
-    if (!pathVar) pathVar = "/usr/local/bin:/usr/bin:/bin";
+        return prog; // already a path
+    if (!pathVar)
+        pathVar = "/usr/local/bin:/usr/bin:/bin";
 
     std::string paths = pathVar;
     size_t start = 0;
     while (start <= paths.size()) {
         size_t end = paths.find(':', start);
-        if (end == std::string::npos) end = paths.size();
+        if (end == std::string::npos)
+            end = paths.size();
         std::string dir = paths.substr(start, end - start);
-        if (dir.empty()) dir = ".";
+        if (dir.empty())
+            dir = ".";
         std::string full = dir + "/" + prog;
         if (access(full.c_str(), X_OK) == 0)
             return full;
         start = end + 1;
     }
-    return "";                                 // not found
+    return ""; // not found
 }
 
 // This always starts a program
@@ -454,6 +452,8 @@ void ProgramConfig::startProgram(program &p) {
         perror("forkpty");
         close(errp[0]);
         close(errp[1]);
+        close(statusp[0]);
+        close(statusp[1]);
         p.state = State::Fatal;
         return;
     }
@@ -469,6 +469,7 @@ void ProgramConfig::startProgram(program &p) {
             _exit(127);
         }
         if (!this->workingdir.empty() && chdir(this->workingdir.c_str()) == -1) {
+            printf("Im looping\n");
             fail(EINVAL);
         }
         ::umask(m_umask);
@@ -485,8 +486,9 @@ void ProgramConfig::startProgram(program &p) {
 
     ssize_t n;
     int child_errno = 0;
-    do { n = read(statusp[0], &child_errno, sizeof(child_errno)); }
-    while (n == -1 && errno == EINTR);
+    do {
+        n = read(statusp[0], &child_errno, sizeof(child_errno));
+    } while (n == -1 && errno == EINTR);
     close(statusp[0]);
     if (n > 0) {
         close(errp[0]);
@@ -496,14 +498,14 @@ void ProgramConfig::startProgram(program &p) {
 
         Logger::get().info("spawnerr: '" + p.name + "': " + strerror(child_errno));
 
-        p.pid = pid;               // so the main loop can match it and call onExit
+        p.pid = pid; // so the main loop can match it and call onExit
         p.spawn_failed = true;
         p.state = State::Starting;
         p.start_time = time(nullptr);
         p.killing = false;
         return;
     }
-    
+
     Logger::get().info("spawned: '" + this->name + "' with pid " + std::to_string(pid));
     p.state = State::Starting;
 
@@ -626,7 +628,7 @@ void ProgramConfig::onExit(program &p, int status) {
         p.pid = -1;
         time_t now = time(nullptr);
         if (++p.curr_retries > startretries) {
-            this->setState(State::Fatal, p);        // logs "gave up: ..."
+            this->setState(State::Fatal, p); // logs "gave up: ..."
         } else {
             p.state = State::Backoff;
             p.backoff_until = now + p.curr_retries; // supervisor: delay = retry count
@@ -652,7 +654,7 @@ void ProgramConfig::onExit(program &p, int status) {
     time_t now = time(nullptr);
     bool diedTooEarly = p.state == State::Starting && now - p.start_time <= startsecs;
     if (diedTooEarly) {
-        
+
         this->setState(State::Exited, p);
         // died too early: failed start
         if (++p.curr_retries > startretries) {
@@ -675,7 +677,7 @@ void ProgramConfig::onExit(program &p, int status) {
         startProgram(p);
 }
 
-void ProgramConfig::setState(State state, program &p){
+void ProgramConfig::setState(State state, program &p) {
     p.state = state;
     Logger::get().printState(state, p, *this);
 }
