@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PROGRAM_CONFIG_HPP
+#define PROGRAM_CONFIG_HPP
 
 #include <algorithm>
 #include <csignal>
@@ -9,6 +10,7 @@
 #include <iostream>
 #include <map>
 #include <regex>
+#include <set>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
@@ -70,11 +72,21 @@ class ProgramConfig {
     mode_t m_umask = 022; // Octal value, this is about setting the files perimission this program will create.
     std::string user;
 
-
     // runtime
     bool m_exiled_program = false; // mtg reference, stronger than destroy, since it wont show in logs.
     int fdout = 0;
     int fderr = 0;
+
+    // Parsing
+    std::set<std::string> m_seen;
+    template <typename T> bool setOnce(const std::string &setting, T &field, T value) {
+        if (!m_seen.insert(setting).second) {
+            std::cerr << "Can't set '" << setting << "' twice in [" << name << "]\n";
+            return false;
+        }
+        field = std::move(value);
+        return true;
+    }
 
     bool isNameTaken(std::string name);
 
@@ -103,7 +115,7 @@ class ProgramConfig {
     //setter
     void setName(std::string newName) { name = newName; }
     void setProgramName(program &p);
-    void setProgramToExile() { m_exiled_program = true; }
+    void setConfigToExile() { m_exiled_program = true; }
     bool isExiled() const { return m_exiled_program; }
 
     void onMasterReadable(program &p);
@@ -129,3 +141,5 @@ class ProgramConfig {
 };
 
 int dropPrivilegesProgram(const std::string &user);
+
+#endif

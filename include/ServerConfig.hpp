@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SERVER_CONFIG_HPP
+#define SERVER_CONFIG_HPP
 
 #include "ProgramConfig.hpp"
 #include <iostream>
@@ -59,3 +60,5 @@ private:
     int         fd = -1;
     std::string path;
 };
+
+#endif
