@@ -1,6 +1,6 @@
 # taskmaster
 
-I love being the master of tasks
+Small clone of supervisor, keep track of processes and write rules for them.
 
 ## Build
 
@@ -10,9 +10,37 @@ make
 
 ## Usage
 
+In one terminal
+
+```bash
+./taskmasterd myconfigfile.conf
+```
+
+In the other
+
+```bash
+./taskmasterctl myconfigfile.conf
+```
+
+then type `help` for commands
+
+## Check memory usage
+
+```bash
+valgrind --leak-check=full --show-leak-kinds=all --suppressions=readline.supp --child-silent-after-fork=yes ./taskmasterd myconfigfile.conf
+```
+
+Change to ctl for client.
+
+check SysLog
+
+```
+journalctl -t taskmaster-prod
+```
+
 ## How it works
 
-It forks stuff then looks at them and it does stuff
+Reads the config file then keep tracks of processes and their configs.
 
 ## Author
 

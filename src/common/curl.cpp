@@ -8,6 +8,10 @@ std::string getEnv(const char *name, const std::string &fallback = "") {
     return v ? v : fallback;
 }
 
+static size_t discardBody(char *, size_t size, size_t nmemb, void *) {
+    return size * nmemb; // pretend we consumed it
+}
+
 bool notifyDiscord(const std::string &message) {
     std::string webhook_url = getEnv("DISCORD_WEBHOOK");
     std::string esc;
@@ -47,6 +51,7 @@ bool notifyDiscord(const std::string &message) {
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, discardBody);
 
     // This does a cheeky allocation since its a getaddrinfo.
     CURLcode res = curl_easy_perform(curl);

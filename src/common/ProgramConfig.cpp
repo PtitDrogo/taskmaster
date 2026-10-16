@@ -153,7 +153,12 @@ int ProgramConfig::parseSetting(const std::string &setting, const std::string &v
             }
             return setOnce(setting, autorestart, ar);
         } else if (setting == "exitcodes") {
-            exitcodes.push_back(std::stoi(value));
+            if (m_seen.insert(setting).second)
+                exitcodes.clear();
+            std::stringstream ss(value);
+            std::string tok;
+            while (std::getline(ss, tok, ','))
+                exitcodes.push_back(std::stoi(tok));
         } else if (setting == "stopsignal") {
             int sig = parseSignals(value);
             if (sig == -1) {
@@ -464,7 +469,7 @@ void ProgramConfig::startProgram(program &p) {
         p.master_fd = -1;
         p.err_fd = -1;
 
-        Logger::get().info("spawnerr: '" + p.name + "': " + strerror(child_errno));
+        Logger::get().info("spawner: '" + p.name + "': " + strerror(child_errno));
 
         p.pid = pid;
         p.spawn_failed = true;
