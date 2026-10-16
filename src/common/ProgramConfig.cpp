@@ -222,6 +222,18 @@ int ProgramConfig::openRedirection() {
     return 0;
 }
 
+void closeRedirection();
+
+// ProgramConfig.cpp
+void ProgramConfig::closeRedirection() {
+    if (this->fdout > 0)
+        close(this->fdout);
+    if (this->fderr > 0)
+        close(this->fderr);
+    this->fdout = 0;
+    this->fderr = 0;
+}
+
 void ProgramConfig::removeOlderLogFile(const std::string &identifier) {
     const fs::path directory = "/tmp";
     const std::string path = this->name + "-" + identifier + "---taskmaster";
@@ -271,6 +283,21 @@ int ProgramConfig::openLog(const std::string &path, const std::string &identifie
     return open(p, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
 }
 
+void ProgramConfig::ensureRedirection() {
+    if (this->fdout > 0 && this->fderr > 0)
+        return;
+    openRedirection();
+}
+
+void ProgramConfig::softLaunchPrograms() {
+    this->ensureRedirection();
+    for (int i = 0; i < numprocs; ++i) {
+        program &p = programs.emplace_back();
+        p.state = State::Stopped;
+        setProgramName(p);
+    }
+}
+
 int ProgramConfig::startAllPrograms() {
     this->openRedirection();
     for (int i = 0; i < numprocs; ++i) {
@@ -286,7 +313,13 @@ void ProgramConfig::scaleToNumprocs() {
             ++active;
 
     while (active < numprocs) {
-        startProgram(programs.emplace_back());
+        program &p = programs.emplace_back();
+        if (autostart)
+            startProgram(p);
+        else {
+            p.state = State::Stopped;
+            setProgramName(p);
+        }
         ++active;
     }
 
@@ -294,8 +327,8 @@ void ProgramConfig::scaleToNumprocs() {
         if (programs[i].exiled)
             continue;
         programs[i].exiled = true;
-        programs[i].restarting = false; 
-        requestStop(programs[i], -1); 
+        programs[i].restarting = false;
+        requestStop(programs[i], -1);
         --active;
     }
 }
@@ -356,7 +389,7 @@ std::string resolvePath(const std::string &prog, const char *pathVar) {
             return full;
         start = end + 1;
     }
-    return ""; 
+    return "";
 }
 
 // This always starts a program
@@ -444,7 +477,7 @@ void ProgramConfig::startProgram(program &p) {
     Logger::get().info("spawned: '" + this->name + "' with pid " + std::to_string(pid));
     p.state = State::Starting;
     p.err_fd = errp[0];
-    
+
     fcntl(p.err_fd, F_SETFL, O_NONBLOCK);
 
     fcntl(p.master_fd, F_SETFD, FD_CLOEXEC);

@@ -22,6 +22,8 @@ static int handleNewPrograms(Configs &configs, const Configs &newConfigs) {
             if (it->second.startAllPrograms() == -1) {
                 return -1;
             }
+        } else if (inserted && !it->second.shouldAutostart()) {
+            it->second.softLaunchPrograms();
         }
     }
     return 1;
@@ -41,7 +43,8 @@ static void handleModifiedPrograms(Configs &configs, const Configs &newConfigs) 
 
         const bool autostart = oldConfig.getAutoStart();
         const size_t n = oldConfig.programs.size();
-
+        
+        oldConfig.closeRedirection();
         oldConfig.openRedirection();
         for (size_t i = 0; i < n; ++i) {
             program &p = oldConfig.programs[i];
@@ -52,8 +55,7 @@ static void handleModifiedPrograms(Configs &configs, const Configs &newConfigs) 
             else if (autostart)
                 oldConfig.startProgram(p);
         }
-        if (autostart)
-            oldConfig.scaleToNumprocs();
+        oldConfig.scaleToNumprocs();
     }
 }
 

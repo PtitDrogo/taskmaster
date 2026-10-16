@@ -90,16 +90,17 @@ class ProgramConfig {
     }
 
     bool isNameTaken(std::string name);
-
-  public:
+    
+    public:
     std::vector<program> programs;
-
+    
     void printSettings() const;
     int parseSetting(const std::string &setting, const std::string &value);
     bool requestStop(program &p, int client_fd);
     bool shouldAutostart() const { return autostart; }
     void startProgram(program &p);
     int startAllPrograms();
+    void softLaunchPrograms();
     void scaleToNumprocs();
 
     void tick(program &p, time_t now);
@@ -137,6 +138,8 @@ class ProgramConfig {
     int openRedirection();
     void removeOlderLogFile(const std::string &identifier);
     int generateRandomFile(const std::string &identifier);
+    void ensureRedirection();
+    void closeRedirection();
 
     void reapExiled();
 };

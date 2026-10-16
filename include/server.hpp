@@ -78,8 +78,11 @@ struct Configs {
 
     void startAllConfigs() {
         for (auto &[name, cfg] : this->m_configs) {
-            if (cfg.shouldAutostart())
+            if (cfg.shouldAutostart()) {
                 cfg.startAllPrograms();
+            } else {
+                cfg.softLaunchPrograms();
+            }
         }
     }
 
